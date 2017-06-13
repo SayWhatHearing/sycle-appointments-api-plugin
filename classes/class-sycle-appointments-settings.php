@@ -258,6 +258,15 @@ final class Sycle_Appointments_Settings {
 				'description' => __( 'Your Sycle password.', 'sycle-appointments' )
 			);
 
+			$settings_fields['places_api'] = array(
+				'name' => __( 'Google Places API Key', 'sycle-appointments' ),
+				'type' => 'text',
+				'default' => '',
+				'section' => 'standard-fields',
+				'description' => __( 'Necessary for geolocation to work.', 'sycle-appointments' )
+			);
+
+
 			$settings_fields['logging'] = array(
 				'name' => __( 'Logging', 'sycle-appointments' ),
 				'type' => 'checkbox',

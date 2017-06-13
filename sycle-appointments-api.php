@@ -119,6 +119,7 @@ final class Sycle_Appointments {
 		}
 		add_shortcode('sycle', array( $this, 'shortcode_sycle' ) );
 		add_action( 'init', array( $this, 'load_plugin_textdomain' ) );
+		add_action( 'wp_enqueue_scripts', array( $this, '_scripts_styles_loader' ) );
 	} // End __construct()
 
 	/**
@@ -243,6 +244,66 @@ return print_r($body,true);
 		$success    = $wpdb->query($query);
 	}
 }
+
+
+
+
+/**
+ * Load CSS styles & JavaScript scripts
+ */
+function _scripts_styles_loader() {
+
+
+
+
+
+wp_enqueue_script('gplaces', 'https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places&callback=initAutocomplete', array('jquery'),false,true);
+
+
+	wp_enqueue_script('sycle', $this->plugin_url . '/js/sycle-min.js', array('jquery'),false,true);
+
+		wp_localize_script(
+		'sycle',
+		'sycle_ajax_object',
+		array(
+			'ajaxurl' => admin_url( 'admin-ajax.php' ),
+			'myajax_nonce' => wp_create_nonce( 'sycle_nonce_val' )
+			)
+		);
+
+
+/*
+
+ <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places&callback=initAutocomplete"
+        async defer></script>
+
+        */
+
+	//wp_enqueue_script('tpmini', '//widget.trustpilot.com/bootstrap/v5/tp.widget.sync.bootstrap.min.js', array('scriptsjs'),false,true);
+
+// for later
+	/*
+	wp_localize_script(
+		'sycle',
+		'sycle_ajax_object',
+		array(
+			'ajaxurl' => admin_url( 'admin-ajax.php' ),
+			'myajax_nonce' => wp_create_nonce( 'sycle_nonce_val' )
+			)
+		);
+	*/
+
+	//wp_enqueue_style('droidsans', 'http://fonts.googleapis.com/css?family=Droid+Sans:400,700',array(),false);
+
+
+}
+
+
+
+
+
+
+
 
 
 public static function activation_functions () {

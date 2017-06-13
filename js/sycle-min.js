@@ -1,0 +1,1 @@
+jQuery(document).ready(function($){console.log("sycle started"),console.log(sycle_ajax_object)});
