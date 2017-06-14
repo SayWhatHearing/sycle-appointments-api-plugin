@@ -9,6 +9,32 @@
 	],
 "creatorBuild": "25813",
 "files": {
+	"\/assets\/sycle-min.css": {
+		"aP": 1,
+		"bl": 0,
+		"ft": 16,
+		"ma": 0,
+		"oA": 0,
+		"oAP": "\/assets\/sycle-min-min.css",
+		"oF": 0,
+		"oS": 0
+		},
+	"\/assets\/sycle.css": {
+		"aP": 1,
+		"bl": 0,
+		"ft": 16,
+		"ma": 0,
+		"oA": 0,
+		"oAP": "\/assets\/sycle-min.css",
+		"oF": 0,
+		"oS": 0
+		},
+	"\/assets\/sycle.css.map": {
+		"ft": 8192,
+		"oA": 2,
+		"oAP": "\/assets\/sycle.css.map",
+		"oF": 0
+		},
 	"\/assets\/sycle.js": {
 		"ft": 64,
 		"mi": 1,
@@ -17,6 +43,23 @@
 		"oF": 2,
 		"sC": 1,
 		"tS": 0
+		},
+	"\/assets\/sycle.less": {
+		"aP": 0,
+		"bl": 0,
+		"dJ": 0,
+		"ft": 1,
+		"ie": 1,
+		"iI": 0,
+		"ma": 1,
+		"oA": 0,
+		"oAP": "\/css\/sycle.css",
+		"oF": 2,
+		"oS": 1,
+		"rU": 0,
+		"sI": 0,
+		"sM": 0,
+		"sU": 0
 		},
 	"\/classes\/class-sycle-appointments-admin.php": {
 		"ft": 8192,
@@ -30,6 +73,22 @@
 		"oAP": "\/classes\/class-sycle-appointments-settings.php",
 		"oF": 0
 		},
+	"\/css\/sycle.css": {
+		"aP": 1,
+		"bl": 0,
+		"ft": 16,
+		"ma": 0,
+		"oA": 0,
+		"oAP": "\/css\/sycle-min.css",
+		"oF": 0,
+		"oS": 0
+		},
+	"\/css\/sycle.css.map": {
+		"ft": 8192,
+		"oA": 2,
+		"oAP": "\/css\/sycle.css.map",
+		"oF": 0
+		},
 	"\/js\/sycle-min.js": {
 		"ft": 64,
 		"mi": 1,
@@ -38,6 +97,12 @@
 		"oF": 0,
 		"sC": 1,
 		"tS": 0
+		},
+	"\/README.html": {
+		"ft": 8192,
+		"oA": 2,
+		"oAP": "\/README.html",
+		"oF": 0
 		},
 	"\/README.md": {
 		"cS": 0,

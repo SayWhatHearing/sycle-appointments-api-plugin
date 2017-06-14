@@ -118,9 +118,15 @@ final class Sycle_Appointments {
 			$this->admin = Sycle_Appointments_Admin::instance();
 		}
 		add_shortcode('sycle', array( $this, 'shortcode_sycle' ) );
+		add_shortcode('sycleclinicslist', array( $this, 'shortcode_sycleclinicslist' ) );
 		add_action( 'init', array( $this, 'load_plugin_textdomain' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, '_scripts_styles_loader' ) );
+
+		// Ajax for loading clinics
+		add_action('wp_ajax_sycle_get_clinics_list', array(&$this, 'ajax_do_sycle_get_clinics_list'));
+		add_action('wp_ajax_nopriv_sycle_get_clinics_list', array(&$this, 'ajax_do_sycle_get_clinics_list'));
 	} // End __construct()
+
 
 	/**
 	 * Main Sycle_Appointments Instance
@@ -139,9 +145,82 @@ final class Sycle_Appointments {
 	} // End instance()
 
 
+	// Gets a token from the Sycle API
+	function get_token() {
+		$thesettings = Sycle_Appointments()->settings->get_settings();
+		$connectstring= '{"username":"'.esc_attr($thesettings['sycle_username']).'", "password":"'.esc_attr($thesettings['sycle_pw']).'"}';
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, "https://amg.sycle.net/api/vendor/token/");
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $connectstring);
+		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
+		$headers = array();
+		$headers[] = "Content-Type: application/x-www-form-urlencoded";
+		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+		$result = curl_exec($ch);
+		$response = json_decode($result);
+		if (curl_errno($ch)) {
+		// Error happened, add to log.
+			$this->log('Error '.curl_error($ch));
+		}
+		curl_close ($ch);
+		return sanitize_text_field($response->token);
+	}
 
-	function shortcode_sycle( ) {
+	// Returns ajax requests with clinics data
+	function ajax_do_sycle_get_clinics_list() {
+		$token = $this->get_token();
+		$output = $this->return_clinics_list($token);
+		echo $output;
+		die();
+	}
 
+
+	function return_clinics_list($token) {
+		if (!$token) return;
+		$connectstring= '{"token":"'.esc_attr($token).'"}';
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, "https://amg.sycle.net/api/vendor/clinics/");
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $connectstring);
+		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
+		$headers = array();
+		$headers[] = "Content-Type: application/x-www-form-urlencoded";
+		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+		$result = curl_exec($ch);
+		//$response = json_decode($result);
+		if (curl_errno($ch)) {
+		// Error happened, add to log.
+			$this->log('Error '.curl_error($ch));
+		}
+		curl_close ($ch);
+		return $result;
+	}
+
+// Shortcode [sycleclinicslist] output
+	function shortcode_sycleclinicslist() {
+	// Lets get settings
+		$thesettings = Sycle_Appointments()->settings->get_settings();
+		$token = $this->get_token();
+
+		$output = '';
+		$output .= '<div class="sycleapi sycleclinicslist"><input class="sycletoken" type="hidden" value="'.esc_attr($token).'"><ul class="clinicslist">';
+
+		// next request
+		// Ideally, I would like to have this implemented in JS - perhaps do a request to _ajax and collect via
+
+		/*
+https://amg.sycle.net/api/vendor/clinics/
+		*/
+
+$output .='</ul></div><!-- .sycleclinicslist -->';
+
+
+return $output;
+}
+
+
+function shortcode_sycle() {
 // todo -
 
 		/*
@@ -155,60 +234,78 @@ final class Sycle_Appointments {
 
 
 		*/
+
+// Lets get settings
+	$thesettings = Sycle_Appointments()->settings->get_settings();
 /*
-$ch = curl_init();
-
-curl_setopt($ch, CURLOPT_URL, "https://amg.sycle.net/api/vendor/token/");
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-curl_setopt($ch, CURLOPT_POSTFIELDS, "{\"username\":\"amg_apt_api_test\", \"password\":\"Sycl3!\"}");
-curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
-
-
-$headers = array();
-$headers[] = "Content-Type: application/x-www-form-urlencoded";
-curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-
-$result = curl_exec($ch);
-if (curl_errno($ch)) {
-    echo 'Error:' . curl_error($ch);
-}
-curl_close ($ch);
+    [sycle_username] => amg_apt_api_test
+    [sycle_pw] => Sycl3!
+    [places_api] => AIzaSyDDoXVq5fLHVVeK7pmJgC-ydnuJPt1SWnA
+    [logging] => true
+    [cleanondeactivate] =>
 */
 
+// Lets get the token
+    $connectstring= '{"username":"'.$thesettings['sycle_username'].'", "password":"'.$thesettings['sycle_pw'].'"}';
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, "https://amg.sycle.net/api/vendor/token/");
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $connectstring);
+    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
+    $headers = array();
+    $headers[] = "Content-Type: application/x-www-form-urlencoded";
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 
+    $result = curl_exec($ch);
+    $response = json_decode($result);
 
+    if (curl_errno($ch)) {
+		// Error happened, add to log.
+    	$this->log('Error '.curl_error($ch));
+    }
+    curl_close ($ch);
 
-$arg_data = array(
-		'username' => 'amg_apt_api_test',
-		'password' => 'Sycl3!'
-	);
-$data = json_encode( $arg_data );
+    $this->log('Response '.print_r($result,true));
 
+    $formtemplate = '<div class="sycleapi"><div id="locationField">
+    <input id="sycletoken" value="'.$response->token.'" type="hidden">
+    <input id="sycleautocomplete" placeholder="Enter your address" type="text" class="sycleautocomplete"></input>
+    </div>
 
-$headers = array();
-//$headers[] = "Content-Type: application/x-www-form-urlencoded";
-$headers = array('Content-Type' => 'application/json');
-$get_token_args = array(
-	'method' => 'GET',
-	'headers' => $headers,
-	'body' => array(
-		'username' => 'amg_apt_api_test',
-		'password' => 'Sycl3!'
-	)
-);
-error_log(print_r($get_token_args,true));
+    <table id="address" style="display:none;">
+    <tr>
+    <td class="label">Street address</td>
+    <td class="slimField"><input class="field" id="street_number"
+    disabled="true"></input></td>
+    <td class="wideField" colspan="2"><input class="field" id="route"
+    disabled="true"></input></td>
+    </tr>
+    <tr>
+    <td class="label">City</td>
+    <!-- Note: Selection of address components in this example is typical.
+    You may need to adjust it for the locations relevant to your app. See
+    https://developers.google.com/maps/documentation/javascript/examples/places-autocomplete-addressform
+    -->
+    <td class="wideField" colspan="3"><input class="field" id="locality"
+    disabled="true"></input></td>
+    </tr>
+    <tr>
+    <td class="label">State</td>
+    <td class="slimField"><input class="field"
+    id="administrative_area_level_1" disabled="true"></input></td>
+    <td class="label">Zip code</td>
+    <td class="wideField"><input class="field" id="postal_code"
+    disabled="true"></input></td>
+    </tr>
+    <tr>
+    <td class="label">Country</td>
+    <td class="wideField" colspan="3"><input class="field"
+    id="country" disabled="true"></input></td>
+    </tr>
+    </table></div><!-- .sycleapi -->';
 
-$response = wp_remote_post( 'https://amg.sycle.net/api/vendor/token/', $get_token_args );
-$body = wp_remote_retrieve_body($response);
-error_log(print_r($body,true));
-
-$this->log('Response '.print_r($body,true));
-
-return print_r($body,true);
-//echo $token;
-
-	//	return get_search_form(false); // true= echoes
-}
+    return $formtemplate;
+  }
 
 
 
@@ -228,13 +325,15 @@ return print_r($body,true);
 	 * @since   1.0.0
 	 */
 	public function log($text, $prio = 0) {
+		$thesettings = Sycle_Appointments()->settings->get_settings();
+		if (!$thesettings['logging']) return; // Don't log if turned off
 
 		global $wpdb;
 		$table_name_log = $wpdb->prefix . 'sycle_log';
 		$time           = date('Y-m-d H:i:s ', time());
 		$text           = esc_sql($text);
 
-	// TODO - PREPARE
+	// TODO - PREPARE / wpdb->insert
 		$daquery        = "INSERT INTO `$table_name_log` (logtime,prio,log) VALUES ('$time','$prio','" . esc_sql($text) . "');";
 		$result         = $wpdb->query($daquery);
 		$total          = (int) $wpdb->get_var("SELECT COUNT(*) FROM `$table_name_log`;");
@@ -253,49 +352,26 @@ return print_r($body,true);
  */
 function _scripts_styles_loader() {
 
+	$thesettings = Sycle_Appointments()->settings->get_settings();
 
+	$localizeparams = array(
+		'ajax_url' => admin_url( 'admin-ajax.php' ),
+		'sycle_nonce' => wp_create_nonce( 'sycle_nonce_val' )
+	);
+		// todo - load via sycle.js instead
+	if ($thesettings['places_api']) {
+		$localizeparams[] = $thesettings['places_api'];
+		wp_enqueue_script('gplaces', 'https://maps.googleapis.com/maps/api/js?key='.esc_attr($thesettings['places_api']).'&libraries=places', array('jquery','sycle'),false,true);
+	}
 
-
-
-wp_enqueue_script('gplaces', 'https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places&callback=initAutocomplete', array('jquery'),false,true);
-
-
-	wp_enqueue_script('sycle', $this->plugin_url . '/js/sycle-min.js', array('jquery'),false,true);
-
-		wp_localize_script(
-		'sycle',
-		'sycle_ajax_object',
-		array(
-			'ajaxurl' => admin_url( 'admin-ajax.php' ),
-			'myajax_nonce' => wp_create_nonce( 'sycle_nonce_val' )
-			)
-		);
-
-
-/*
-
- <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places&callback=initAutocomplete"
-        async defer></script>
-
-        */
-
-	//wp_enqueue_script('tpmini', '//widget.trustpilot.com/bootstrap/v5/tp.widget.sync.bootstrap.min.js', array('scriptsjs'),false,true);
-
-// for later
-	/*
+	wp_register_script('sycle', $this->plugin_url . '/js/sycle-min.js', array('jquery'),false,true);
+	wp_enqueue_style('sycle', $this->plugin_url . '/css/sycle.css', array(), false);
 	wp_localize_script(
 		'sycle',
 		'sycle_ajax_object',
-		array(
-			'ajaxurl' => admin_url( 'admin-ajax.php' ),
-			'myajax_nonce' => wp_create_nonce( 'sycle_nonce_val' )
-			)
-		);
-	*/
-
-	//wp_enqueue_style('droidsans', 'http://fonts.googleapis.com/css?family=Droid+Sans:400,700',array(),false);
-
-
+		$localizeparams
+	);
+	wp_enqueue_script('sycle');
 }
 
 
@@ -327,8 +403,6 @@ public static function activation_functions () {
 require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 dbDelta( $sql );
 } // End install()
-
-
 
 
 	/**
