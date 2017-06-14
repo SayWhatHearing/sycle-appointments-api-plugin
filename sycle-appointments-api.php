@@ -200,7 +200,7 @@ final class Sycle_Appointments {
 // Shortcode [sycleclinicslist] output
 	function shortcode_sycleclinicslist() {
 	// Lets get settings
-		$thesettings = Sycle_Appointments()->settings->get_settings();
+		//$thesettings = Sycle_Appointments()->settings->get_settings();
 		$token = $this->get_token();
 
 		$output = '';
