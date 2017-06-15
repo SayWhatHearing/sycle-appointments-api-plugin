@@ -145,167 +145,125 @@ final class Sycle_Appointments {
 	} // End instance()
 
 
-	// Gets a token from the Sycle API
-	function get_token() {
+// Returns endpoint url for API - appends endpoint if added
+	function get_api_url($endpoint = '') {
 		$thesettings = Sycle_Appointments()->settings->get_settings();
-		$connectstring= '{"username":"'.esc_attr($thesettings['sycle_username']).'", "password":"'.esc_attr($thesettings['sycle_pw']).'"}';
-		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, "https://amg.sycle.net/api/vendor/token/");
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($ch, CURLOPT_POSTFIELDS, $connectstring);
-		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
-		$headers = array();
-		$headers[] = "Content-Type: application/x-www-form-urlencoded";
-		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-		$result = curl_exec($ch);
-		$response = json_decode($result);
-		if (curl_errno($ch)) {
+		$sycle_subdomain = $thesettings['sycle_subdomain'];
+	if (!$sycle_subdomain) $sycle_subdomain = 'amg'; // default
+	$finalurl = trailingslashit('https://'.$sycle_subdomain.'.sycle.net/api/vendor/'.$endpoint);
+	return $finalurl;
+}
+
+	// Gets a token from the Sycle API
+function get_token() {
+	$thesettings = Sycle_Appointments()->settings->get_settings();
+	$connectstring= '{"username":"'.esc_attr($thesettings['sycle_username']).'", "password":"'.esc_attr($thesettings['sycle_pw']).'"}';
+	$ch = curl_init();
+
+	curl_setopt($ch, CURLOPT_URL, $this->get_api_url('token'));
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+	curl_setopt($ch, CURLOPT_POSTFIELDS, $connectstring);
+	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
+	$headers = array();
+	$headers[] = "Content-Type: application/x-www-form-urlencoded";
+	curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+	$result = curl_exec($ch);
+	$response = json_decode($result);
+	if (curl_errno($ch)) {
 		// Error happened, add to log.
-			$this->log('Error '.curl_error($ch));
-		}
-		curl_close ($ch);
-		return sanitize_text_field($response->token);
+		$this->log('Error '.curl_error($ch));
 	}
+	curl_close ($ch);
+	return sanitize_text_field($response->token);
+}
+
+
 
 	// Returns ajax requests with clinics data
-	function ajax_do_sycle_get_clinics_list() {
-		$token = $this->get_token();
-		$output = $this->return_clinics_list($token);
-		echo $output;
-		die();
-	}
+function ajax_do_sycle_get_clinics_list() {
+	$token = $this->get_token();
+	$output = $this->return_clinics_list($token);
+	echo $output;
+	die();
+}
 
 
-	function return_clinics_list($token) {
-		if (!$token) return;
-		$connectstring= '{"token":"'.esc_attr($token).'"}';
-		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, "https://amg.sycle.net/api/vendor/clinics/");
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($ch, CURLOPT_POSTFIELDS, $connectstring);
-		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
-		$headers = array();
-		$headers[] = "Content-Type: application/x-www-form-urlencoded";
-		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-		$result = curl_exec($ch);
+
+
+function return_clinics_list($token) {
+	if (!$token) return;
+	$connectstring= '{"token":"'.esc_attr($token).'"}';
+	$ch = curl_init();
+	curl_setopt($ch, CURLOPT_URL, $this->get_api_url('clinics'));
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+	curl_setopt($ch, CURLOPT_POSTFIELDS, $connectstring);
+	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
+	$headers = array();
+	$headers[] = "Content-Type: application/x-www-form-urlencoded";
+	curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+	$result = curl_exec($ch);
 		//$response = json_decode($result);
-		if (curl_errno($ch)) {
+	if (curl_errno($ch)) {
 		// Error happened, add to log.
-			$this->log('Error '.curl_error($ch));
-		}
-		curl_close ($ch);
-		return $result;
+		$this->log('Error '.curl_error($ch));
 	}
+	curl_close ($ch);
+	return $result;
+}
+
+
+
 
 // Shortcode [sycleclinicslist] output
-	function shortcode_sycleclinicslist() {
-	// Lets get settings
-		//$thesettings = Sycle_Appointments()->settings->get_settings();
-		$token = $this->get_token();
-
-		$output = '';
-		$output .= '<div class="sycleapi sycleclinicslist"><input class="sycletoken" type="hidden" value="'.esc_attr($token).'"><ul class="clinicslist">';
-
-		// next request
-		// Ideally, I would like to have this implemented in JS - perhaps do a request to _ajax and collect via
-
-		/*
-https://amg.sycle.net/api/vendor/clinics/
-		*/
-
-$output .='</ul></div><!-- .sycleclinicslist -->';
-
-
-return $output;
+function shortcode_sycleclinicslist() {
+	// Content is generated via AJAX call. An ajax call is performed that returns the list of clinics and injects in to the UL .clinicslist
+	$token = $this->get_token();
+	$output = '<div class="sycleapi sycleclinicslist"><input class="sycletoken" type="hidden" value="'.esc_attr($token).'"><ul class="clinicslist"></ul></div><!-- .sycleclinicslist -->';
+	return $output;
 }
 
 
 function shortcode_sycle() {
-// todo -
 
-		/*
-	shortcode
+	$formtemplate = '<div class="sycleapi"><div id="locationField">
+	<input id="sycletoken" value="'.$this->get_token().'" type="hidden">
+	<input id="sycleautocomplete" placeholder="Enter your address" type="text" class="sycleautocomplete"></input>
+	</div>
 
-	- if no param - get list of vendors and return results.
+	<table id="address" style="display:none;">
+	<tr>
+	<td class="label">Street address</td>
+	<td class="slimField"><input class="field" id="street_number"
+	disabled="true"></input></td>
+	<td class="wideField" colspan="2"><input class="field" id="route"
+	disabled="true"></input></td>
+	</tr>
+	<tr>
+	<td class="label">City</td>
+	<!-- Note: Selection of address components in this example is typical.
+	You may need to adjust it for the locations relevant to your app. See
+	https://developers.google.com/maps/documentation/javascript/examples/places-autocomplete-addressform
+	-->
+	<td class="wideField" colspan="3"><input class="field" id="locality"
+	disabled="true"></input></td>
+	</tr>
+	<tr>
+	<td class="label">State</td>
+	<td class="slimField"><input class="field"
+	id="administrative_area_level_1" disabled="true"></input></td>
+	<td class="label">Zip code</td>
+	<td class="wideField"><input class="field" id="postal_code"
+	disabled="true"></input></td>
+	</tr>
+	<tr>
+	<td class="label">Country</td>
+	<td class="wideField" colspan="3"><input class="field"
+	id="country" disabled="true"></input></td>
+	</tr>
+	</table></div><!-- .sycleapi -->';
 
-
-	transient short term?
-
-
-
-		*/
-
-// Lets get settings
-	$thesettings = Sycle_Appointments()->settings->get_settings();
-/*
-    [sycle_username] => amg_apt_api_test
-    [sycle_pw] => Sycl3!
-    [places_api] => AIzaSyDDoXVq5fLHVVeK7pmJgC-ydnuJPt1SWnA
-    [logging] => true
-    [cleanondeactivate] =>
-*/
-
-// Lets get the token
-    $connectstring= '{"username":"'.$thesettings['sycle_username'].'", "password":"'.$thesettings['sycle_pw'].'"}';
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, "https://amg.sycle.net/api/vendor/token/");
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $connectstring);
-    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
-    $headers = array();
-    $headers[] = "Content-Type: application/x-www-form-urlencoded";
-    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-
-    $result = curl_exec($ch);
-    $response = json_decode($result);
-
-    if (curl_errno($ch)) {
-		// Error happened, add to log.
-    	$this->log('Error '.curl_error($ch));
-    }
-    curl_close ($ch);
-
-    $this->log('Response '.print_r($result,true));
-
-    $formtemplate = '<div class="sycleapi"><div id="locationField">
-    <input id="sycletoken" value="'.$response->token.'" type="hidden">
-    <input id="sycleautocomplete" placeholder="Enter your address" type="text" class="sycleautocomplete"></input>
-    </div>
-
-    <table id="address" style="display:none;">
-    <tr>
-    <td class="label">Street address</td>
-    <td class="slimField"><input class="field" id="street_number"
-    disabled="true"></input></td>
-    <td class="wideField" colspan="2"><input class="field" id="route"
-    disabled="true"></input></td>
-    </tr>
-    <tr>
-    <td class="label">City</td>
-    <!-- Note: Selection of address components in this example is typical.
-    You may need to adjust it for the locations relevant to your app. See
-    https://developers.google.com/maps/documentation/javascript/examples/places-autocomplete-addressform
-    -->
-    <td class="wideField" colspan="3"><input class="field" id="locality"
-    disabled="true"></input></td>
-    </tr>
-    <tr>
-    <td class="label">State</td>
-    <td class="slimField"><input class="field"
-    id="administrative_area_level_1" disabled="true"></input></td>
-    <td class="label">Zip code</td>
-    <td class="wideField"><input class="field" id="postal_code"
-    disabled="true"></input></td>
-    </tr>
-    <tr>
-    <td class="label">Country</td>
-    <td class="wideField" colspan="3"><input class="field"
-    id="country" disabled="true"></input></td>
-    </tr>
-    </table></div><!-- .sycleapi -->';
-
-    return $formtemplate;
-  }
+	return $formtemplate;
+}
 
 
 

@@ -258,6 +258,14 @@ final class Sycle_Appointments_Settings {
 				'description' => __( 'Your Sycle password.', 'sycle-appointments' )
 			);
 
+			$settings_fields['sycle_subdomain'] = array(
+				'name' => __( 'Sycle Subdomain', 'sycle-appointments' ),
+				'type' => 'text',
+				'default' => 'amg',
+				'section' => 'standard-fields',
+				'description' => __( 'Sycle Subdomain - if API url is amg.sycle.net enter "amg"', 'sycle-appointments' )
+			);
+
 			$settings_fields['places_api'] = array(
 				'name' => __( 'Google Places API Key', 'sycle-appointments' ),
 				'type' => 'text',
