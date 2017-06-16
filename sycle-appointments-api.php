@@ -322,8 +322,8 @@ function _scripts_styles_loader() {
 		wp_enqueue_script('gplaces', 'https://maps.googleapis.com/maps/api/js?key='.esc_attr($thesettings['places_api']).'&libraries=places', array('jquery','sycle'),false,true);
 	}
 
-	wp_register_script('sycle', $this->plugin_url . '/js/sycle-min.js', array('jquery'),false,true);
-	wp_enqueue_style('sycle', $this->plugin_url . '/css/sycle.css', array(), false);
+	wp_register_script('sycle', $this->plugin_url . 'js/sycle-min.js', array('jquery'),false,true);
+	wp_enqueue_style('sycle', $this->plugin_url . 'css/sycle.css', array(), false);
 	wp_localize_script(
 		'sycle',
 		'sycle_ajax_object',
