@@ -5,11 +5,9 @@ jQuery(document).ready(function($) {
 /* Lars - really would have liked to get this to work - Maybe Michael knows?
 	Gist of it, apparently using $.ajax() you cannot send a body in the request when doing GET - so with GET, the data is parsed as parameters, which Sycle ignores.
 	With POST - Sycle rejects the request completely.
-
-	LARS - do instead with ajax call to WP function, do the request there and return here.
-
 	*/
 
+	// Detects the [cycleclinicslist] shortcode output, reads nonce and gets back a list of clinics
 	if( jQuery('.sycleclinicslist').length ) {
 		if ( (sycle_ajax_object.hasOwnProperty("sycle_nonce")) || (sycle_ajax_object.hasOwnProperty("ajax_url")) ) {
 			$( ".sycleclinicslist" ).each( function( index, element ){
@@ -23,7 +21,7 @@ jQuery(document).ready(function($) {
 					success : function( response ) {
 						var clinics = $.parseJSON(response);
 						$.each( clinics.clinic_details, function( key, clinic ) {
-							$(element).find('.clinicslist').append('<li><h4>'+clinic.clinic.clinic_name+'</h4>'+clinic.clinic.address.street1+'<br>'+clinic.clinic.address.street2+'<br>'+clinic.clinic.address.state+'</li>').hide().fadeIn(250);
+							$(element).find('.clinicslist').append('<li>'+clinic+'</li>').hide().fadeIn(350);
 						});
 					},
 					error: function(error){
@@ -50,6 +48,17 @@ jQuery(document).ready(function($) {
 			 //                     geolocate();
 			});
 	}
+
+
+
+
+
+
+
+
+
+
+
 
 
 // REF: https://developers.google.com/maps/documentation/javascript/examples/places-autocomplete-addressform
@@ -112,12 +121,6 @@ function initAutocomplete() {
 					});
 				}
 			}
-
-
-
-
-
-
 
 
 /*
@@ -193,49 +196,11 @@ https://developers.google.com/maps/documentation/javascript/examples/places-auto
 			}
 
 
-
-			*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-			/*
-
-
-
 https://developers.google.com/maps/documentation/javascript/places-autocomplete#add_autocomplete
 
 When a user selects a place from the predictions attached to the autocomplete text field, the service fires a place_changed event. You can call getPlace() on the Autocomplete object, to retrieve a PlaceResult object.
 
 
-
-
 */
-/*
-	if( jQuery('#customertestimonials').length ) { // if customer testimonials are shown
-		var containercustomer = document.querySelector('#customertestimonials');
-		var msnrycustomer = new Masonry( containercustomer, {
-			itemSelector: '.item'
-		});
-
-	} // if( jQuery('#customertestimonials').length )
-	if( jQuery('.categorylisting .et_pb_row #internekursercont').length ) { //
-		var containercategory = document.querySelector('.categorylisting .et_pb_row #internekursercont');
-		var msnrycategory = new Masonry( containercategory, {
-			itemSelector: '.item'
-		});
-
-	} // if( jQuery('#customertestimonials').length )
-	*/
-
 
 });

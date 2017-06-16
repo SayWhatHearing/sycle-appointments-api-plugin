@@ -119,12 +119,25 @@ final class Sycle_Appointments {
 		}
 		add_shortcode('sycle', array( $this, 'shortcode_sycle' ) );
 		add_shortcode('sycleclinicslist', array( $this, 'shortcode_sycleclinicslist' ) );
+
+
 		add_action( 'init', array( $this, 'load_plugin_textdomain' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, '_scripts_styles_loader' ) );
 
 		// Ajax for loading clinics
 		add_action('wp_ajax_sycle_get_clinics_list', array(&$this, 'ajax_do_sycle_get_clinics_list'));
 		add_action('wp_ajax_nopriv_sycle_get_clinics_list', array(&$this, 'ajax_do_sycle_get_clinics_list'));
+
+
+
+
+
+
+
+
+
+
+
 	} // End __construct()
 
 
@@ -182,89 +195,212 @@ function get_token() {
 	// Returns ajax requests with clinics data
 function ajax_do_sycle_get_clinics_list() {
 	$token = $this->get_token();
-	$output = $this->return_clinics_list($token);
-	echo $output;
+	$clinics_list = $this->return_clinics_list($token);
+	$clinics_list = json_decode($clinics_list);
+	$output = array();
+	if (is_array($clinics_list->clinic_details)) {
+		foreach ($clinics_list->clinic_details as $clinic) {
+			$output['clinic_details'][] = $this->return_clinic_markup($clinic);
+		}
+	}
+	echo json_encode($output);
 	die();
 }
 
+// Returns individual location in marked up format
+function return_clinic_markup($locdetails) {
+	$output = '';
+	$output .= '<div itemscope itemtype="http://schema.org/LocalBusiness">
+	<div itemprop="name"><strong>'.$locdetails->clinic->clinic_name.'</strong></div>';
 
-
-
-function return_clinics_list($token) {
-	if (!$token) return;
-	$connectstring= '{"token":"'.esc_attr($token).'"}';
-	$ch = curl_init();
-	curl_setopt($ch, CURLOPT_URL, $this->get_api_url('clinics'));
-	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-	curl_setopt($ch, CURLOPT_POSTFIELDS, $connectstring);
-	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
-	$headers = array();
-	$headers[] = "Content-Type: application/x-www-form-urlencoded";
-	curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-	$result = curl_exec($ch);
-		//$response = json_decode($result);
-	if (curl_errno($ch)) {
-		// Error happened, add to log.
-		$this->log('Error '.curl_error($ch));
+	if ( (isset($locdetails->clinic->phone1)) && ($locdetails->clinic->phone1<>'')) {
+		$output .= '<a href="tel:'.$locdetails->clinic->phone1.'" target="_blank" class="telephone" itemprop="telephone">'.$locdetails->clinic->phone1.'</a>';
 	}
-	curl_close ($ch);
-	return $result;
-}
+
+	$output .= '<div itemprop="address" itemscope itemtype="http://schema.org/PostalAddress">
+	<span itemprop="streetAddress">'.$locdetails->clinic->address->street1.'</span>
+	<span itemprop="addressLocality">'.$locdetails->clinic->address->city.'</span>,
+	<span itemprop="addressRegion">'.$locdetails->clinic->address->state.'</span>
+	<span itemprop="postalCode">'.$locdetails->clinic->address->zip.'</span>
+	<span itemprop="addressCountry">'.$locdetails->clinic->address->country.'</span><br>
+	</div>
+	';
+	$output .= '</div><!-- LocalBusiness -->';
+	/*
+	?>
+	<div itemscope itemtype="http://schema.org/LocalBusiness">
+	<div itemprop="name"><strong>business name</strong></div>
+	<div itemprop="description">Short Desc</div>
+	<meta itemprop="MakesOffer" content="service 1">
+	<meta itemprop="MakesOffer" content="service 2">
+	<meta itemprop="MakesOffer" content="service 3">
+	<div itemprop="telephone">tel</div>
+	<div itemprop="geo" itemscope itemtype="http://schema.org/GeoCoordinates"><meta itemprop="latitude" content="lat"><meta itemprop="longitude" content="long"></div>
+	<div itemprop="address" itemscope itemtype="http://schema.org/PostalAddress">
+	<span itemprop="streetAddress">street</span>
+	<span itemprop="addressLocality">city</span>,
+	<span itemprop="addressRegion">state</span>
+	<span itemprop="postalCode">postal</span>
+	<span itemprop="addressCountry">country</span><br>
+	</div>
+	<A href="https://maps.google.com/maps?q=street+city+state&gl=us&t=h&z=16" itemprop="map" target="map">map</a><meta itemprop="location" content="street city, state postal country">
+	 <meta type="Rich Snippet" name="Generator" content="https://goo.gl/hx1k7x"> <br>/div>
+	<?php
+
+
+    [clinic] => stdClass Object
+        (
+            [clinic_id] => 2803-9506
+            [clinic_name] => AMG Test Parentco
+            [address] => stdClass Object
+                (
+                    [street1] => 1901 Floyd St.
+                    [street2] =>
+                    [city] => FL
+                    [state] => 34239
+                    [country] => USA
+                    [zip] =>
+                )
+
+            [phone1] => 7865634010
+            [phone2] =>
+            [collision_limit] => 1
+        )
+
+    [appointment_types] => Array
+        (
+            [0] => stdClass Object
+                (
+                    [appt_type_id] => 2803-1
+                    [name] => Hearing Aid Evaluation
+                    [length] => 90
+                )
+
+            [1] => stdClass Object
+                (
+                    [appt_type_id] => 2803-2
+                    [name] => Diagnostic Evaluation
+                    [length] => 60
+                )
+
+            [2] => stdClass Object
+                (
+                    [appt_type_id] => 2803-3
+                    [name] => Hearing Aid Demo
+                    [length] => 60
+                )
+
+            [3] => stdClass Object
+                (
+                    [appt_type_id] => 2803-4
+                    [name] => Fitting/Follow Up
+                    [length] => 45
+                )
+
+            [4] => stdClass Object
+                (
+                    [appt_type_id] => 2803-5
+                    [name] => Service/Repair
+                    [length] => 15
+                )
+
+            [5] => stdClass Object
+                (
+                    [appt_type_id] => 2803-6
+                    [name] => Clean and Check
+                    [length] => 15
+                )
+
+        )
+
+
+
+
+
+
+
+
+
+
+	*/
+        return $output;
+      }
+
+
+      function return_clinics_list($token) {
+      	if (!$token) return;
+      	$connectstring= '{"token":"'.esc_attr($token).'"}';
+      	$ch = curl_init();
+      	curl_setopt($ch, CURLOPT_URL, $this->get_api_url('clinics'));
+      	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+      	curl_setopt($ch, CURLOPT_POSTFIELDS, $connectstring);
+      	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
+      	$headers = array();
+      	$headers[] = "Content-Type: application/x-www-form-urlencoded";
+      	curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+      	$result = curl_exec($ch);
+		//$response = json_decode($result);
+      	if (curl_errno($ch)) {
+		// Error happened, add to log.
+      		$this->log('Error '.curl_error($ch));
+      	}
+      	curl_close ($ch);
+      	return $result;
+      }
 
 
 
 
 // Shortcode [sycleclinicslist] output
-function shortcode_sycleclinicslist() {
+      function shortcode_sycleclinicslist() {
 	// Content is generated via AJAX call. An ajax call is performed that returns the list of clinics and injects in to the UL .clinicslist
-	$token = $this->get_token();
-	$output = '<div class="sycleapi sycleclinicslist"><input class="sycletoken" type="hidden" value="'.esc_attr($token).'"><ul class="clinicslist"></ul></div><!-- .sycleclinicslist -->';
-	return $output;
-}
+      	$token = $this->get_token();
+      	$output = '<div class="sycleapi sycleclinicslist"><input class="sycletoken" type="hidden" value="'.esc_attr($token).'"><ul class="clinicslist"></ul></div><!-- .sycleclinicslist -->';
+      	return $output;
+      }
 
 
-function shortcode_sycle() {
+      function shortcode_sycle() {
 
-	$formtemplate = '<div class="sycleapi"><div id="locationField">
-	<input id="sycletoken" value="'.$this->get_token().'" type="hidden">
-	<input id="sycleautocomplete" placeholder="Enter your address" type="text" class="sycleautocomplete"></input>
-	</div>
+      	$formtemplate = '<div class="sycleapi"><div id="locationField">
+      	<input id="sycletoken" value="'.$this->get_token().'" type="hidden">
+      	<input id="sycleautocomplete" placeholder="Enter your address" type="text" class="sycleautocomplete"></input>
+      	</div>
 
-	<table id="address" style="display:none;">
-	<tr>
-	<td class="label">Street address</td>
-	<td class="slimField"><input class="field" id="street_number"
-	disabled="true"></input></td>
-	<td class="wideField" colspan="2"><input class="field" id="route"
-	disabled="true"></input></td>
-	</tr>
-	<tr>
-	<td class="label">City</td>
-	<!-- Note: Selection of address components in this example is typical.
-	You may need to adjust it for the locations relevant to your app. See
-	https://developers.google.com/maps/documentation/javascript/examples/places-autocomplete-addressform
-	-->
-	<td class="wideField" colspan="3"><input class="field" id="locality"
-	disabled="true"></input></td>
-	</tr>
-	<tr>
-	<td class="label">State</td>
-	<td class="slimField"><input class="field"
-	id="administrative_area_level_1" disabled="true"></input></td>
-	<td class="label">Zip code</td>
-	<td class="wideField"><input class="field" id="postal_code"
-	disabled="true"></input></td>
-	</tr>
-	<tr>
-	<td class="label">Country</td>
-	<td class="wideField" colspan="3"><input class="field"
-	id="country" disabled="true"></input></td>
-	</tr>
-	</table></div><!-- .sycleapi -->';
+      	<table id="address" style="display:none;">
+      	<tr>
+      	<td class="label">Street address</td>
+      	<td class="slimField"><input class="field" id="street_number"
+      	disabled="true"></input></td>
+      	<td class="wideField" colspan="2"><input class="field" id="route"
+      	disabled="true"></input></td>
+      	</tr>
+      	<tr>
+      	<td class="label">City</td>
+      	<!-- Note: Selection of address components in this example is typical.
+      	You may need to adjust it for the locations relevant to your app. See
+      	https://developers.google.com/maps/documentation/javascript/examples/places-autocomplete-addressform
+      	-->
+      	<td class="wideField" colspan="3"><input class="field" id="locality"
+      	disabled="true"></input></td>
+      	</tr>
+      	<tr>
+      	<td class="label">State</td>
+      	<td class="slimField"><input class="field"
+      	id="administrative_area_level_1" disabled="true"></input></td>
+      	<td class="label">Zip code</td>
+      	<td class="wideField"><input class="field" id="postal_code"
+      	disabled="true"></input></td>
+      	</tr>
+      	<tr>
+      	<td class="label">Country</td>
+      	<td class="wideField" colspan="3"><input class="field"
+      	id="country" disabled="true"></input></td>
+      	</tr>
+      	</table></div><!-- .sycleapi -->';
 
-	return $formtemplate;
-}
-
+      	return $formtemplate;
+      }
 
 
 	/**
@@ -285,22 +421,31 @@ function shortcode_sycle() {
 	public function log($text, $prio = 0) {
 		$thesettings = Sycle_Appointments()->settings->get_settings();
 		if (!$thesettings['logging']) return; // Don't log if turned off
-
 		global $wpdb;
 		$table_name_log = $wpdb->prefix . 'sycle_log';
 		$time           = date('Y-m-d H:i:s ', time());
 		$text           = esc_sql($text);
+		$wpdb->insert(
+			$table_name_log,
+			array(
+				'logtime'  => current_time( 'mysql' ),
+				'prio'  => $prio,
+				'log' => esc_sql($text)
+			),
+			array(
+				'%s',
+				'%d',
+				'%s'
+			)
+		);
 
-	// TODO - PREPARE / wpdb->insert
-		$daquery        = "INSERT INTO `$table_name_log` (logtime,prio,log) VALUES ('$time','$prio','" . esc_sql($text) . "');";
-		$result         = $wpdb->query($daquery);
 		$total          = (int) $wpdb->get_var("SELECT COUNT(*) FROM `$table_name_log`;");
-	if ($total > 1000) { // Set a little higher, no need to run it all the time
-		$targettime = $wpdb->get_var("SELECT `logtime` from `$table_name_log` order by `logtime` DESC limit 500,1;");
-		$query      = "DELETE from `$table_name_log`  where `logtime` < '$targettime';";
-		$success    = $wpdb->query($query);
+		if ($total > 1000) { // Set a little higher, no need to run it all the time
+			$targettime = $wpdb->get_var("SELECT `logtime` from `$table_name_log` order by `logtime` DESC limit 500,1;");
+			$query      = "DELETE from `$table_name_log`  where `logtime` < '$targettime';";
+			$success    = $wpdb->query($query);
+		}
 	}
-}
 
 
 

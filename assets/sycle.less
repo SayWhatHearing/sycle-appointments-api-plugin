@@ -1,16 +1,62 @@
 /*
-	Basic Sycle styling - perhaps include a form reset
+::-webkit-input-placeholder {
+  color: pink;
+}
+::-moz-placeholder {
+  color: pink;
+}
+:-ms-input-placeholder {
+  color: pink;
+}
+:-moz-placeholder {
+  color: pink;
+}
 */
-.sycleapi {
+
+
+
+/*
+	Basic Sycle styling - perhaps include a form reset
+	*/
+	.sycleapi {
 	/*
 	General styling applied to all output
 	*/
 }
 
+.sycleapi #locationField {
+	margin-bottom: 10px;
+}
 .sycleapi.sycleclinicslist {
+	-webkit-transition: all .350s;
+	transition: all .350s;
+
+}
+
+.sycleapi.sycleclinicslist li {
+	-webkit-transition: all .350s;
+	transition: all .350s;
+
+	margin-bottom: 5px;
 
 }
 
 .sycleapi.sycleclinicslist .clinicslist li {
 	list-style-type: none;
+}
+/*
+
+*/
+
+.sycleapi .telephone {
+
+}
+.sycleapi .telephone:before {
+	content: "\2706";
+	font-weight: normal;
+	text-decoration: inherit;
+	position: relative;
+	margin-right: 5px;
+	display: block;
+	float: left;
 }
