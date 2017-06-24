@@ -129,13 +129,9 @@ final class Sycle_Appointments {
 		add_action('wp_ajax_nopriv_sycle_get_clinics_list', array(&$this, 'ajax_do_sycle_get_clinics_list'));
 
 
-
-
-
-
-
-
-
+		// Ajax for returning nearest clinics
+		add_action('wp_ajax_sycle_get_search_results', array(&$this, 'ajax_do_sycle_get_search_results'));
+		add_action('wp_ajax_nopriv_sycle_get_search_results', array(&$this, 'ajax_do_sycle_get_search_results'));
 
 
 	} // End __construct()
@@ -156,6 +152,103 @@ final class Sycle_Appointments {
 			self::$_instance = new self();
 			return self::$_instance;
 	} // End instance()
+
+
+
+	function return_search_clinics_results($searchdata) {
+		if (!$searchdata) return;
+//		$token = $this->get_token();
+error_log(print_r($searchdata,true));
+		$connectstring = json_encode($searchdata);
+error_log(print_r($connectstring,true));
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, $this->get_api_url('clinics'));
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $connectstring);
+		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
+		$headers = array();
+		$headers[] = "Content-Type: application/x-www-form-urlencoded";
+		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+		$result = curl_exec($ch);
+//$response = json_decode($result);
+		if (curl_errno($ch)) {
+// Error happened, add to log.
+			$this->log('Error '.curl_error($ch));
+		}
+		curl_close ($ch);
+		return $result;
+	}
+
+
+
+
+
+
+
+
+	// Returns ajax with a search
+function ajax_do_sycle_get_search_results() {
+	// TODO validate token
+	error_log('ajax_do_sycle_get_search_results() '.print_r($_POST,true));
+	$request = array();
+
+	//$title = sanitize_text_field( $_POST['title'] );
+
+	$addressfield = sanitize_text_field( $_POST['addressfield'] );
+// todo merge addressfield
+
+	$proximity = array(); // todo look for and parse any locale data
+	$proximity['zip'] = '34239'; // todo debug required
+	$proximity['miles'] = '100'; // todo debug 	1-1000 required
+
+	$request['token'] = $this->get_token();
+	//$request['start_date'] = date('Y-m-d');
+	$request['proximity'] = $proximity;
+	$result = $this->return_search_clinics_results($request);
+
+	error_log('result : '.json_encode($result));
+
+/*
+{
+	"start_date":"2014-09-28",
+	"end_date":"2014-09-29",
+	"clinic_id":[
+"876-1923",
+		"876-1924"
+	],
+	"staff_id":[
+		"876-1111",
+		"876-2222"
+],
+	"proximity":{
+		"street1":"123 Park Place",
+		"street2":"Suite 100",
+		"city":"Hillsboro",
+		"state":"OR",
+		"zip":"97123",
+		"miles":50,
+		"max_results":3
+},
+	"opening_length":60,
+	"token":"abc123"
+}
+*/
+/*
+	$token = $this->get_token();
+	$clinics_list = $this->return_clinics_list($token);
+	$clinics_list = json_decode($clinics_list);
+	$output = array();
+	if (is_array($clinics_list->clinic_details)) {
+		foreach ($clinics_list->clinic_details as $clinic) {
+			$output['clinic_details'][] = $this->return_clinic_markup($clinic);
+		}
+	}
+	echo json_encode($output);
+*/
+	die();
+}
+
+
 
 
 // Returns endpoint url for API - appends endpoint if added
@@ -248,159 +341,152 @@ function return_clinic_markup($locdetails) {
 	<?php
 
 
-    [clinic] => stdClass Object
-        (
-            [clinic_id] => 2803-9506
-            [clinic_name] => AMG Test Parentco
-            [address] => stdClass Object
-                (
-                    [street1] => 1901 Floyd St.
-                    [street2] =>
-                    [city] => FL
-                    [state] => 34239
-                    [country] => USA
-                    [zip] =>
-                )
+		[clinic] => stdClass Object
+				(
+						[clinic_id] => 2803-9506
+						[clinic_name] => AMG Test Parentco
+						[address] => stdClass Object
+								(
+										[street1] => 1901 Floyd St.
+										[street2] =>
+										[city] => FL
+										[state] => 34239
+										[country] => USA
+										[zip] =>
+								)
 
-            [phone1] => 7865634010
-            [phone2] =>
-            [collision_limit] => 1
-        )
+						[phone1] => 7865634010
+						[phone2] =>
+						[collision_limit] => 1
+				)
 
-    [appointment_types] => Array
-        (
-            [0] => stdClass Object
-                (
-                    [appt_type_id] => 2803-1
-                    [name] => Hearing Aid Evaluation
-                    [length] => 90
-                )
+		[appointment_types] => Array
+				(
+						[0] => stdClass Object
+								(
+										[appt_type_id] => 2803-1
+										[name] => Hearing Aid Evaluation
+										[length] => 90
+								)
 
-            [1] => stdClass Object
-                (
-                    [appt_type_id] => 2803-2
-                    [name] => Diagnostic Evaluation
-                    [length] => 60
-                )
+						[1] => stdClass Object
+								(
+										[appt_type_id] => 2803-2
+										[name] => Diagnostic Evaluation
+										[length] => 60
+								)
 
-            [2] => stdClass Object
-                (
-                    [appt_type_id] => 2803-3
-                    [name] => Hearing Aid Demo
-                    [length] => 60
-                )
+						[2] => stdClass Object
+								(
+										[appt_type_id] => 2803-3
+										[name] => Hearing Aid Demo
+										[length] => 60
+								)
 
-            [3] => stdClass Object
-                (
-                    [appt_type_id] => 2803-4
-                    [name] => Fitting/Follow Up
-                    [length] => 45
-                )
+						[3] => stdClass Object
+								(
+										[appt_type_id] => 2803-4
+										[name] => Fitting/Follow Up
+										[length] => 45
+								)
 
-            [4] => stdClass Object
-                (
-                    [appt_type_id] => 2803-5
-                    [name] => Service/Repair
-                    [length] => 15
-                )
+						[4] => stdClass Object
+								(
+										[appt_type_id] => 2803-5
+										[name] => Service/Repair
+										[length] => 15
+								)
 
-            [5] => stdClass Object
-                (
-                    [appt_type_id] => 2803-6
-                    [name] => Clean and Check
-                    [length] => 15
-                )
+						[5] => stdClass Object
+								(
+										[appt_type_id] => 2803-6
+										[name] => Clean and Check
+										[length] => 15
+								)
 
-        )
-
-
-
-
-
-
-
-
+				)
 
 
 	*/
-        return $output;
-      }
+				return $output;
+			}
 
 
-      function return_clinics_list($token) {
-      	if (!$token) return;
-      	$connectstring= '{"token":"'.esc_attr($token).'"}';
-      	$ch = curl_init();
-      	curl_setopt($ch, CURLOPT_URL, $this->get_api_url('clinics'));
-      	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-      	curl_setopt($ch, CURLOPT_POSTFIELDS, $connectstring);
-      	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
-      	$headers = array();
-      	$headers[] = "Content-Type: application/x-www-form-urlencoded";
-      	curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-      	$result = curl_exec($ch);
+			function return_clinics_list($token) {
+				if (!$token) return;
+				$connectstring= '{"token":"'.esc_attr($token).'"}';
+				$ch = curl_init();
+				curl_setopt($ch, CURLOPT_URL, $this->get_api_url('clinics'));
+				curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+				curl_setopt($ch, CURLOPT_POSTFIELDS, $connectstring);
+				curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
+				$headers = array();
+				$headers[] = "Content-Type: application/x-www-form-urlencoded";
+				curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+				$result = curl_exec($ch);
 		//$response = json_decode($result);
-      	if (curl_errno($ch)) {
+				if (curl_errno($ch)) {
 		// Error happened, add to log.
-      		$this->log('Error '.curl_error($ch));
-      	}
-      	curl_close ($ch);
-      	return $result;
-      }
+					$this->log('Error '.curl_error($ch));
+				}
+				curl_close ($ch);
+				return $result;
+			}
 
 
 
 
 // Shortcode [sycleclinicslist] output
-      function shortcode_sycleclinicslist() {
+			function shortcode_sycleclinicslist() {
 	// Content is generated via AJAX call. An ajax call is performed that returns the list of clinics and injects in to the UL .clinicslist
-      	$token = $this->get_token();
-      	$output = '<div class="sycleapi sycleclinicslist"><input class="sycletoken" type="hidden" value="'.esc_attr($token).'"><ul class="clinicslist"></ul></div><!-- .sycleclinicslist -->';
-      	return $output;
-      }
+				$token = $this->get_token();
+				$output = '<div class="sycleapi sycleclinicslist"><input class="sycletoken" type="hidden" value="'.esc_attr($token).'"><ul class="clinicslist"></ul></div><!-- .sycleclinicslist -->';
+				return $output;
+			}
 
 
-      function shortcode_sycle() {
+			function shortcode_sycle() {
+// todo i8n?
+				$formtemplate = '<div class="sycleapi">
+				<form id="syclefindcloseclinic"><div id="locationField">
+				<input id="sycletoken" value="'.$this->get_token().'" type="hidden">
+				<input id="sycleautocomplete" placeholder="Enter your address or ZIP code" type="text" class="sycleautocomplete"></input>
+				</div>
 
-      	$formtemplate = '<div class="sycleapi"><div id="locationField">
-      	<input id="sycletoken" value="'.$this->get_token().'" type="hidden">
-      	<input id="sycleautocomplete" placeholder="Enter your address" type="text" class="sycleautocomplete"></input>
-      	</div>
-
-      	<table id="address" style="display:none;">
-      	<tr>
-      	<td class="label">Street address</td>
-      	<td class="slimField"><input class="field" id="street_number"
-      	disabled="true"></input></td>
-      	<td class="wideField" colspan="2"><input class="field" id="route"
-      	disabled="true"></input></td>
-      	</tr>
-      	<tr>
-      	<td class="label">City</td>
-      	<!-- Note: Selection of address components in this example is typical.
-      	You may need to adjust it for the locations relevant to your app. See
-      	https://developers.google.com/maps/documentation/javascript/examples/places-autocomplete-addressform
-      	-->
-      	<td class="wideField" colspan="3"><input class="field" id="locality"
-      	disabled="true"></input></td>
-      	</tr>
-      	<tr>
-      	<td class="label">State</td>
-      	<td class="slimField"><input class="field"
-      	id="administrative_area_level_1" disabled="true"></input></td>
-      	<td class="label">Zip code</td>
-      	<td class="wideField"><input class="field" id="postal_code"
-      	disabled="true"></input></td>
-      	</tr>
-      	<tr>
-      	<td class="label">Country</td>
-      	<td class="wideField" colspan="3"><input class="field"
-      	id="country" disabled="true"></input></td>
-      	</tr>
-      	</table></div><!-- .sycleapi -->';
-
-      	return $formtemplate;
-      }
+				<table class="sycleadrresults" style="display:none;">
+				<tr>
+				<td class="label">Street address</td>
+				<td class="slimField"><input class="field" id="street_number"
+				disabled="true"></input></td>
+				<td class="wideField" colspan="2"><input class="field" id="route"
+				disabled="true"></input></td>
+				</tr>
+				<tr>
+				<td class="label">City</td>
+				<!-- Note: Selection of address components in this example is typical.
+				You may need to adjust it for the locations relevant to your app. See
+				https://developers.google.com/maps/documentation/javascript/examples/places-autocomplete-addressform
+				-->
+				<td class="wideField" colspan="3"><input class="field" id="locality"
+				disabled="true"></input></td>
+				</tr>
+				<tr>
+				<td class="label">State</td>
+				<td class="slimField"><input class="field"
+				id="administrative_area_level_1" disabled="true"></input></td>
+				<td class="label">Zip code</td>
+				<td class="wideField"><input class="field" id="postal_code"
+				disabled="true"></input></td>
+				</tr>
+				<tr>
+				<td class="label">Country</td>
+				<td class="wideField" colspan="3"><input class="field"
+				id="country" disabled="true"></input></td>
+				</tr>
+				</table>
+				</form><div class="syclelookupresults"></div><!-- .syclelookupresults --></div><!-- .sycleapi -->';
+				return $formtemplate;
+			}
 
 
 	/**
@@ -457,6 +543,8 @@ function _scripts_styles_loader() {
 
 	$thesettings = Sycle_Appointments()->settings->get_settings();
 
+
+	// todo - genbrug token?
 	$localizeparams = array(
 		'ajax_url' => admin_url( 'admin-ajax.php' ),
 		'sycle_nonce' => wp_create_nonce( 'sycle_nonce_val' )
@@ -490,7 +578,7 @@ public static function activation_functions () {
 		return;
 	$plugin = isset( $_REQUEST['plugin'] ) ? $_REQUEST['plugin'] : '';
 	check_admin_referer( "activate-plugin_{$plugin}" );
-        # Uncomment the following line to see the function in action
+				# Uncomment the following line to see the function in action
 	global $wpdb;
 
 	$charset_collate = $wpdb->get_charset_collate();

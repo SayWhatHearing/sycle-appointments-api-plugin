@@ -28,7 +28,7 @@ jQuery(document).ready(function($) {
 						console.log("Error:"); // todo remove in prod
 						console.log(error); // todo remove in prod
 					}
-	 			}); // end ajax
+				}); // end ajax
 			}); // end foreach
 		} // Hasownproperty
 	} // if( jQuery('.sycleclinicslist').length )
@@ -39,15 +39,37 @@ jQuery(document).ready(function($) {
 		$( ".sycleautocomplete" ).on( "click", function() {
 		 // initAutocomplete();
 		 autocomplete = new google.maps.places.Autocomplete(
-		 	/** @type {!HTMLInputElement} */(document.getElementById('sycleautocomplete')),
-		 	{types: ['geocode']});
+			/** @type {!HTMLInputElement} */(document.getElementById('sycleautocomplete')),
+			{types: ['geocode']});
 
 		 var place = autocomplete.getPlace();
 
 		 autocomplete.addListener('place_changed', fillInAddress);
 			 //                     geolocate();
-			});
-	}
+
+
+		// todo - validate relevant data is there.
+		// Elegant?
+		var addressfield = $("#syclefindcloseclinic .sycleautocomplete").val();
+		console.log(addressfield);
+		jQuery.ajax({
+			url : sycle_ajax_object.ajax_url,
+			type : 'post',
+			data : {
+				action : 'sycle_get_search_results',
+				_ajax_nonce: sycle_ajax_object.sycle_nonce,
+				addressfield: addressfield
+			},
+			success : function( response ) {
+				console.log('success: '+response);
+			},
+			error: function(error){
+				console.log("Error:"); // todo remove in prod
+				console.log(error); // todo remove in prod
+			}
+		}); // end ajax
+	});
+} // if the location autocomplete is shown.
 
 
 
@@ -58,51 +80,48 @@ jQuery(document).ready(function($) {
 
 
 
+		// REF: https://developers.google.com/maps/documentation/javascript/examples/places-autocomplete-addressform
+		var placeSearch, autocomplete;
+		var componentForm = {
+			street_number: 'short_name',
+			route: 'long_name',
+			locality: 'long_name',
+			administrative_area_level_1: 'short_name',
+			country: 'long_name',
+			postal_code: 'short_name'
+		};
 
+		function initAutocomplete() {
+			// Create the autocomplete object, restricting the search to geographical
+			// location types.
+			autocomplete = new google.maps.places.Autocomplete(
+				/** @type {!HTMLInputElement} */(document.getElementById('autocomplete')),
+				{types: ['geocode']});
 
+			// When the user selects an address from the dropdown, populate the address
+			// fields in the form.
+			autocomplete.addListener('place_changed', fillInAddress);
+		}
 
-// REF: https://developers.google.com/maps/documentation/javascript/examples/places-autocomplete-addressform
-var placeSearch, autocomplete;
-var componentForm = {
-	street_number: 'short_name',
-	route: 'long_name',
-	locality: 'long_name',
-	administrative_area_level_1: 'short_name',
-	country: 'long_name',
-	postal_code: 'short_name'
-};
+		function fillInAddress() {
+			// Get the place details from the autocomplete object.
+			var place = autocomplete.getPlace();
 
-function initAutocomplete() {
-				// Create the autocomplete object, restricting the search to geographical
-				// location types.
-				autocomplete = new google.maps.places.Autocomplete(
-					/** @type {!HTMLInputElement} */(document.getElementById('autocomplete')),
-					{types: ['geocode']});
-
-				// When the user selects an address from the dropdown, populate the address
-				// fields in the form.
-				autocomplete.addListener('place_changed', fillInAddress);
+			for (var component in componentForm) {
+				document.getElementById(component).value = '';
+				document.getElementById(component).disabled = false;
 			}
 
-			function fillInAddress() {
-				// Get the place details from the autocomplete object.
-				var place = autocomplete.getPlace();
-
-				for (var component in componentForm) {
-					document.getElementById(component).value = '';
-					document.getElementById(component).disabled = false;
-				}
-
-				// Get each component of the address from the place details
-				// and fill the corresponding field on the form.
-				for (var i = 0; i < place.address_components.length; i++) {
-					var addressType = place.address_components[i].types[0];
-					if (componentForm[addressType]) {
-						var val = place.address_components[i][componentForm[addressType]];
-						document.getElementById(addressType).value = val;
-					}
+			// Get each component of the address from the place details
+			// and fill the corresponding field on the form.
+			for (var i = 0; i < place.address_components.length; i++) {
+				var addressType = place.address_components[i].types[0];
+				if (componentForm[addressType]) {
+					var val = place.address_components[i][componentForm[addressType]];
+					document.getElementById(addressType).value = val;
 				}
 			}
+		}
 
 			// Bias the autocomplete object to the user's geographical location,
 			// as supplied by the browser's 'navigator.geolocation' object.
