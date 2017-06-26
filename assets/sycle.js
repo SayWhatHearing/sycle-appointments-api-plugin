@@ -34,42 +34,55 @@ jQuery(document).ready(function($) {
 	} // if( jQuery('.sycleclinicslist').length )
 
 
+
+
+
+
+
+
+	// Location autocomplete shortcode communication
 	if( jQuery('.sycleautocomplete').length ) { // if the location autocomplete is shown.
+		$( ".sycleautocomplete" ).on( "click", function(e) {
 
-		$( ".sycleautocomplete" ).on( "click", function() {
-		 // initAutocomplete();
-		 autocomplete = new google.maps.places.Autocomplete(
-			/** @type {!HTMLInputElement} */(document.getElementById('sycleautocomplete')),
-			{types: ['geocode']});
+			e.preventDefault();
+			// initAutocomplete();
+			autocomplete = new google.maps.places.Autocomplete(
+				/** @type {!HTMLInputElement} */(document.getElementById('sycleautocomplete')),
+				{types: ['geocode']});
 
-		 var place = autocomplete.getPlace();
+			var place = autocomplete.getPlace();
 
-		 autocomplete.addListener('place_changed', fillInAddress);
+			autocomplete.addListener('place_changed', fillInAddress);
 			 //                     geolocate();
 
+			 var addressfield = $(".syclefindcloseclinic .sycleautocomplete").val();
+			//console.log(addressfield);
 
-		// todo - validate relevant data is there.
-		// Elegant?
-		var addressfield = $("#syclefindcloseclinic .sycleautocomplete").val();
-		console.log(addressfield);
-		jQuery.ajax({
-			url : sycle_ajax_object.ajax_url,
-			type : 'post',
-			data : {
-				action : 'sycle_get_search_results',
-				_ajax_nonce: sycle_ajax_object.sycle_nonce,
-				addressfield: addressfield
-			},
-			success : function( response ) {
-				console.log('success: '+response);
-			},
-			error: function(error){
-				console.log("Error:"); // todo remove in prod
-				console.log(error); // todo remove in prod
-			}
-		}); // end ajax
-	});
-} // if the location autocomplete is shown.
+			jQuery.ajax({
+				url : sycle_ajax_object.ajax_url,
+				type : 'post',
+				data : {
+					action : 'sycle_get_search_results',
+					_ajax_nonce: sycle_ajax_object.sycle_nonce,
+					addressfield: addressfield
+				},
+				success : function( response ) {
+					var clinics = $.parseJSON(response);
+
+					$(e.target).closest('.sycleapi').find('.clinicslist').empty(); // resets results
+
+					$.each( clinics.clinic_details, function( key, clinic ) {
+						//console.log('resp '+clinic);
+						$(e.target).closest('.sycleapi').find('.clinicslist').append('<li>'+clinic+'</li>').hide().fadeIn(350);
+			});
+				},
+				error: function(error){
+					console.log("Error:"); // todo remove in prod
+					console.log(error); // todo remove in prod
+				}
+			}); // end ajax
+		});
+	} // if the location autocomplete is shown.
 
 
 

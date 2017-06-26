@@ -158,9 +158,9 @@ final class Sycle_Appointments {
 	function return_search_clinics_results($searchdata) {
 		if (!$searchdata) return;
 //		$token = $this->get_token();
-error_log(print_r($searchdata,true));
+//error_log(print_r($searchdata,true));
 		$connectstring = json_encode($searchdata);
-error_log(print_r($connectstring,true));
+//error_log(print_r($connectstring,true));
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $this->get_api_url('clinics'));
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -170,7 +170,7 @@ error_log(print_r($connectstring,true));
 		$headers[] = "Content-Type: application/x-www-form-urlencoded";
 		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 		$result = curl_exec($ch);
-//$response = json_decode($result);
+
 		if (curl_errno($ch)) {
 // Error happened, add to log.
 			$this->log('Error '.curl_error($ch));
@@ -182,14 +182,10 @@ error_log(print_r($connectstring,true));
 
 
 
-
-
-
-
 	// Returns ajax with a search
 function ajax_do_sycle_get_search_results() {
 	// TODO validate token
-	error_log('ajax_do_sycle_get_search_results() '.print_r($_POST,true));
+	//error_log('ajax_do_sycle_get_search_results() '.print_r($_POST,true));
 	$request = array();
 
 	//$title = sanitize_text_field( $_POST['title'] );
@@ -204,9 +200,21 @@ function ajax_do_sycle_get_search_results() {
 	$request['token'] = $this->get_token();
 	//$request['start_date'] = date('Y-m-d');
 	$request['proximity'] = $proximity;
+
 	$result = $this->return_search_clinics_results($request);
 
-	error_log('result : '.json_encode($result));
+	$clinics_list = json_decode($result);
+	//error_log('clinics_list : '.print_r($clinics_list,true));
+
+	$output = array();
+	if (is_array($clinics_list->clinic_details)) {
+		foreach ($clinics_list->clinic_details as $clinic) {
+			$output['clinic_details'][] = $this->return_clinic_markup($clinic);
+		}
+	}
+	echo json_encode($output);
+
+//	error_log('result : '.json_encode($result));
 
 /*
 {
@@ -265,7 +273,6 @@ function get_token() {
 	$thesettings = Sycle_Appointments()->settings->get_settings();
 	$connectstring= '{"username":"'.esc_attr($thesettings['sycle_username']).'", "password":"'.esc_attr($thesettings['sycle_pw']).'"}';
 	$ch = curl_init();
-
 	curl_setopt($ch, CURLOPT_URL, $this->get_api_url('token'));
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 	curl_setopt($ch, CURLOPT_POSTFIELDS, $connectstring);
@@ -318,6 +325,30 @@ function return_clinic_markup($locdetails) {
 	<span itemprop="addressCountry">'.$locdetails->clinic->address->country.'</span><br>
 	</div>
 	';
+
+$output .= '<form method="post" action=""><input type="hidden" name="clinic_id" value="'.$locdetails->clinic->clinic_id.'">';
+
+	$output .= '<select class="apttype">';
+	foreach ($locdetails->appointment_types as $appointment_type) {
+
+//error_log(print_r($appointment_type,true));
+
+	$output .= '<option value="'.$appointment_type->name.'" data-type="'.$appointment_type->appt_type_id.'" data-length="'.$appointment_type->length.'">'.$appointment_type->name.'</option>';
+	/*
+[26-Jun-2017 14:10:44 UTC] stdClass Object
+(
+    [appt_type_id] => 2803-1
+    [name] => Hearing Aid Evaluation
+    [length] => 90
+)
+	*/
+
+}
+	$output .= '</select>';
+$output .= '<input type="submit" name="submit" id="submit" class="button" value="'.__('Book Time','sycleapi').'">';
+
+$output .='</form>';
+
 	$output .= '</div><!-- LocalBusiness -->';
 	/*
 	?>
@@ -448,9 +479,10 @@ function return_clinic_markup($locdetails) {
 			function shortcode_sycle() {
 // todo i8n?
 				$formtemplate = '<div class="sycleapi">
-				<form id="syclefindcloseclinic"><div id="locationField">
+				<div class="syclelookupresults"><ul class="clinicslist"></ul></div><!-- .syclelookupresults -->
+				<form class="syclefindcloseclinic"><div id="locationField">
 				<input id="sycletoken" value="'.$this->get_token().'" type="hidden">
-				<input id="sycleautocomplete" placeholder="Enter your address or ZIP code" type="text" class="sycleautocomplete"></input>
+				<input id="sycleautocomplete" placeholder="'.__('Enter your address or ZIP code','sycleapi').'" type="text" class="sycleautocomplete"></input>
 				</div>
 
 				<table class="sycleadrresults" style="display:none;">
@@ -484,7 +516,7 @@ function return_clinic_markup($locdetails) {
 				id="country" disabled="true"></input></td>
 				</tr>
 				</table>
-				</form><div class="syclelookupresults"></div><!-- .syclelookupresults --></div><!-- .sycleapi -->';
+				</form></div><!-- .sycleapi -->';
 				return $formtemplate;
 			}
 
