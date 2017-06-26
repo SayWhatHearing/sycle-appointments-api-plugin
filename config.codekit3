@@ -44,9 +44,9 @@
 	"\/assets\/sycle.js": {
 		"ft": 64,
 		"mi": 1,
-		"oA": 0,
+		"oA": 2,
 		"oAP": "\/js\/sycle-min.js",
-		"oF": 2,
+		"oF": 3,
 		"sC": 1,
 		"tS": 0
 		},
