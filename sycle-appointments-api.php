@@ -201,37 +201,59 @@ final class Sycle_Appointments {
 
 		error_log('ajax_do_sycle_get_search_results() '.print_r($_POST,true));
 
-	$proximity = array(); // todo look for and parse any locale data
-	$proximity['zip'] = '34239'; // todo debug required
-	$proximity['miles'] = '100'; // todo debug 	1-1000 required
+		// Setting defaults
+		$proximity = array(); // todo look for and parse any locale data
+		$proximity['zip'] = '34239'; // todo debug required
+		$proximity['miles'] = '100'; // todo debug 	1-1000 required
 
-	$request['token'] = $this->get_token();
+		if (is_array($_POST['addressfield'])) {
+			foreach ($_POST['addressfield'] as $adrfield) {
+				if ($adrfield['types'][0]=='street_number') {
+					$proximity['street1'] = $adrfield['short_name'];
+				}
+				if ($adrfield['types'][0]=='route') {
+					$proximity['street1'] .= ' '.$adrfield['short_name'];
+				}
+				if ($adrfield['types'][0]=='postal_code') {
+					$proximity['zip'] = $adrfield['short_name'];
+				}
+				if ($adrfield['types'][0]=='administrative_area_level_2') {
+					$proximity['city'] = $adrfield['short_name'];
+				}
+				if ($adrfield['types'][0]=='administrative_area_level_1') {
+					$proximity['state'] = $adrfield['short_name'];
+				}
+			}
+		}
+//		error_log(print_r($proximity,true));
+
+        $request['token'] = $this->get_token();
 	//$request['start_date'] = date('Y-m-d');
-	$request['proximity'] = $proximity;
+        $request['proximity'] = $proximity;
 
-	$result = $this->return_search_clinics_results($request);
+        $result = $this->return_search_clinics_results($request);
 
-	$clinics_list = json_decode($result);
+        $clinics_list = json_decode($result);
 	//error_log('clinics_list : '.print_r($clinics_list,true));
 
-	$output = array();
-	if (is_array($clinics_list->clinic_details)) {
-		foreach ($clinics_list->clinic_details as $clinic) {
-			$output['clinic_details'][] = $this->return_clinic_markup($clinic);
-		}
-	}
-	echo json_encode($output);
+        $output = array();
+        if (is_array($clinics_list->clinic_details)) {
+        	foreach ($clinics_list->clinic_details as $clinic) {
+        		$output['clinic_details'][] = $this->return_clinic_markup($clinic);
+        	}
+        }
+        echo json_encode($output);
 
-	die();
-}
+        die();
+      }
 
 
 
 
 // Returns endpoint url for API - appends endpoint if added
-function get_api_url($endpoint = '') {
-	$thesettings = Sycle_Appointments()->settings->get_settings();
-	$sycle_subdomain = $thesettings['sycle_subdomain'];
+      function get_api_url($endpoint = '') {
+      	$thesettings = Sycle_Appointments()->settings->get_settings();
+      	$sycle_subdomain = $thesettings['sycle_subdomain'];
 	if (!$sycle_subdomain) $sycle_subdomain = 'amg'; // default
 	$finalurl = trailingslashit('https://'.$sycle_subdomain.'.sycle.net/api/vendor/'.$endpoint);
 	return $finalurl;

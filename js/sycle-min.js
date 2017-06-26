@@ -45,7 +45,7 @@ jQuery(document).ready(function($) {
 				/** @type {!HTMLInputElement} */(document.getElementById('sycleautocomplete')),
 				{types: ['geocode']});
 
-			var addrString = '#';
+			var addressfield = '#';
 			//autocomplete.addListener('place_changed', fillInAddress);
 			autocomplete.addListener('place_changed', function() {
 				// var data = $("#search_form").serialize();
@@ -66,14 +66,10 @@ jQuery(document).ready(function($) {
 					});
 				});
 
-				var addrString = streetAddrDisplay.join(' ');
-				console.log('new addrString '+addrString);
+				var addressfield = streetAddrDisplay.join(' ');
+				console.log('new addrString '+addressfield);
 				// show_submit_data(data);
 
-
-
-				//return false;
-			}); // place_changed
 
 
 			jQuery.ajax({
@@ -82,7 +78,7 @@ jQuery(document).ready(function($) {
 				data : {
 					action : 'sycle_get_search_results',
 					_ajax_nonce: sycle_ajax_object.sycle_nonce,
-					addressfield: addrString
+					addressfield: place_components
 				},
 				success : function( response ) {
 					var clinics = $.parseJSON(response);
@@ -97,6 +93,12 @@ jQuery(document).ready(function($) {
 					console.log(error); // todo remove in prod
 				}
 			}); // end ajax
+
+
+
+
+				//return false;
+			}); // place_changed
 
 
 			 // geolocate();
