@@ -183,14 +183,12 @@ final class Sycle_Appointments {
 
 
 	// Returns ajax with a search
-function ajax_do_sycle_get_search_results() {
+	function ajax_do_sycle_get_search_results() {
 	// TODO validate token
-	//error_log('ajax_do_sycle_get_search_results() '.print_r($_POST,true));
-	$request = array();
+		$request = array();
 
-	//$title = sanitize_text_field( $_POST['title'] );
 
-	$addressfield = sanitize_text_field( $_POST['addressfield'] );
+		$addressfield = sanitize_text_field( $_POST['addressfield'] );
 // todo merge addressfield
 
 	$proximity = array(); // todo look for and parse any locale data
@@ -214,45 +212,6 @@ function ajax_do_sycle_get_search_results() {
 	}
 	echo json_encode($output);
 
-//	error_log('result : '.json_encode($result));
-
-/*
-{
-	"start_date":"2014-09-28",
-	"end_date":"2014-09-29",
-	"clinic_id":[
-"876-1923",
-		"876-1924"
-	],
-	"staff_id":[
-		"876-1111",
-		"876-2222"
-],
-	"proximity":{
-		"street1":"123 Park Place",
-		"street2":"Suite 100",
-		"city":"Hillsboro",
-		"state":"OR",
-		"zip":"97123",
-		"miles":50,
-		"max_results":3
-},
-	"opening_length":60,
-	"token":"abc123"
-}
-*/
-/*
-	$token = $this->get_token();
-	$clinics_list = $this->return_clinics_list($token);
-	$clinics_list = json_decode($clinics_list);
-	$output = array();
-	if (is_array($clinics_list->clinic_details)) {
-		foreach ($clinics_list->clinic_details as $clinic) {
-			$output['clinic_details'][] = $this->return_clinic_markup($clinic);
-		}
-	}
-	echo json_encode($output);
-*/
 	die();
 }
 
@@ -260,9 +219,9 @@ function ajax_do_sycle_get_search_results() {
 
 
 // Returns endpoint url for API - appends endpoint if added
-	function get_api_url($endpoint = '') {
-		$thesettings = Sycle_Appointments()->settings->get_settings();
-		$sycle_subdomain = $thesettings['sycle_subdomain'];
+function get_api_url($endpoint = '') {
+	$thesettings = Sycle_Appointments()->settings->get_settings();
+	$sycle_subdomain = $thesettings['sycle_subdomain'];
 	if (!$sycle_subdomain) $sycle_subdomain = 'amg'; // default
 	$finalurl = trailingslashit('https://'.$sycle_subdomain.'.sycle.net/api/vendor/'.$endpoint);
 	return $finalurl;
@@ -309,6 +268,8 @@ function ajax_do_sycle_get_clinics_list() {
 
 // Returns individual location in marked up format
 function return_clinic_markup($locdetails) {
+	global $wpdb;
+
 	$output = '';
 	$output .= '<div itemscope itemtype="http://schema.org/LocalBusiness">
 	<div itemprop="name"><strong>'.$locdetails->clinic->clinic_name.'</strong></div>';
@@ -326,14 +287,34 @@ function return_clinic_markup($locdetails) {
 	</div>
 	';
 
-$output .= '<form method="post" action=""><input type="hidden" name="clinic_id" value="'.$locdetails->clinic->clinic_id.'">';
+	$actionurl = '';
 
-	$output .= '<select class="apttype">';
-	foreach ($locdetails->appointment_types as $appointment_type) {
+	$locID = $wpdb->get_var("SELECT post_id FROM `".$wpdb->postmeta."` WHERE meta_key='sycle_clinic_id' AND meta_value='".$locdetails->clinic->clinic_id."'");
+
+	if ($locID) {
+		$actionurl = get_post_permalink( $locID );
+	}
+
+//	error_log('logid '.$locID);
+/*
+		if (is_array($meta) && !empty($meta) && isset($meta[0])) {
+			$meta = $meta[0];
+		}
+		if (is_object($meta)) {
+			return $meta->post_id;
+		}
+		else {
+			return false;
+		}
+		*/
+		$output .= '<form method="post" action="'.$actionurl.'"><input type="hidden" name="clinic_id" value="'.$locdetails->clinic->clinic_id.'">';
+
+		$output .= '<select class="apttype">';
+		foreach ($locdetails->appointment_types as $appointment_type) {
 
 //error_log(print_r($appointment_type,true));
 
-	$output .= '<option value="'.$appointment_type->name.'" data-type="'.$appointment_type->appt_type_id.'" data-length="'.$appointment_type->length.'">'.$appointment_type->name.'</option>';
+			$output .= '<option value="'.$appointment_type->name.'" data-type="'.$appointment_type->appt_type_id.'" data-length="'.$appointment_type->length.'">'.$appointment_type->name.'</option>';
 	/*
 [26-Jun-2017 14:10:44 UTC] stdClass Object
 (
@@ -344,12 +325,12 @@ $output .= '<form method="post" action=""><input type="hidden" name="clinic_id" 
 	*/
 
 }
-	$output .= '</select>';
+$output .= '</select>';
 $output .= '<input type="submit" name="submit" id="submit" class="button" value="'.__('Book Time','sycleapi').'">';
 
 $output .='</form>';
 
-	$output .= '</div><!-- LocalBusiness -->';
+$output .= '</div><!-- LocalBusiness -->';
 	/*
 	?>
 	<div itemscope itemtype="http://schema.org/LocalBusiness">

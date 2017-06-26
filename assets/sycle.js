@@ -56,7 +56,6 @@ jQuery(document).ready(function($) {
 			 //                     geolocate();
 
 			 var addressfield = $(".syclefindcloseclinic .sycleautocomplete").val();
-			//console.log(addressfield);
 
 			jQuery.ajax({
 				url : sycle_ajax_object.ajax_url,
@@ -117,6 +116,8 @@ jQuery(document).ready(function($) {
 		}
 
 		function fillInAddress() {
+			// LARS - TODO - find better solution, instead of storing in html objects - perhaps hidden input fields?
+
 			// Get the place details from the autocomplete object.
 			var place = autocomplete.getPlace();
 
