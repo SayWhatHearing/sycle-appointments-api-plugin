@@ -9,7 +9,7 @@
  * Requires at least: 4.23.0
  * Tested up to: 4.7.5
  *
- * Text Domain: sycle-appointments
+ * Text Domain: sycleapi
  * Domain Path: /languages/
  *
  * @package Sycle_Appointments
@@ -18,7 +18,9 @@
  */
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
+register_deactivation_hook( __FILE__, array( 'Sycle_Appointments', 'de_activation_functions' ) );
 register_activation_hook( __FILE__, array( 'Sycle_Appointments', 'activation_functions' ) );
+
 /**
  * Returns the main instance of Sycle_Appointments to prevent the need to use globals.
  *
@@ -199,7 +201,7 @@ final class Sycle_Appointments {
 		//$addressfield = sanitize_text_field( $_POST['addressfield'] );
 // todo merge addressfield
 
-		error_log('ajax_do_sycle_get_search_results() '.print_r($_POST,true));
+		//error_log('ajax_do_sycle_get_search_results() '.print_r($_POST,true));
 
 		// Setting defaults
 		$proximity = array(); // todo look for and parse any locale data
@@ -225,35 +227,39 @@ final class Sycle_Appointments {
 				}
 			}
 		}
-//		error_log(print_r($proximity,true));
+		error_log(print_r($proximity,true));
+		error_log(print_r($_POST,true));
+		error_log(print_r(json_decode($_POST['addressfield']),true));
 
-        $request['token'] = $this->get_token();
-	//$request['start_date'] = date('Y-m-d');
-        $request['proximity'] = $proximity;
 
-        $result = $this->return_search_clinics_results($request);
 
-        $clinics_list = json_decode($result);
-	//error_log('clinics_list : '.print_r($clinics_list,true));
+		$request['token'] = $this->get_token();
+//$request['start_date'] = date('Y-m-d');
+		$request['proximity'] = $proximity;
 
-        $output = array();
-        if (is_array($clinics_list->clinic_details)) {
-        	foreach ($clinics_list->clinic_details as $clinic) {
-        		$output['clinic_details'][] = $this->return_clinic_markup($clinic);
-        	}
-        }
-        echo json_encode($output);
+		$result = $this->return_search_clinics_results($request);
 
-        die();
-      }
+		$clinics_list = json_decode($result);
+//error_log('clinics_list : '.print_r($clinics_list,true));
+
+		$output = array();
+		if (is_array($clinics_list->clinic_details)) {
+			foreach ($clinics_list->clinic_details as $clinic) {
+				$output['clinic_details'][] = $this->return_clinic_markup($clinic);
+			}
+		}
+		echo json_encode($output);
+
+		die();
+	}
 
 
 
 
 // Returns endpoint url for API - appends endpoint if added
-      function get_api_url($endpoint = '') {
-      	$thesettings = Sycle_Appointments()->settings->get_settings();
-      	$sycle_subdomain = $thesettings['sycle_subdomain'];
+	function get_api_url($endpoint = '') {
+		$thesettings = Sycle_Appointments()->settings->get_settings();
+		$sycle_subdomain = $thesettings['sycle_subdomain'];
 	if (!$sycle_subdomain) $sycle_subdomain = 'amg'; // default
 	$finalurl = trailingslashit('https://'.$sycle_subdomain.'.sycle.net/api/vendor/'.$endpoint);
 	return $finalurl;
@@ -327,11 +333,14 @@ function return_clinic_markup($locdetails) {
 		$actionurl = get_post_permalink( $locID );
 	}
 
-	$output .= '<form method="post" action="'.$actionurl.'"><input type="hidden" name="clinic_id" value="'.$locdetails->clinic->clinic_id.'">';
+	$output .= '<form method="post" action="'.$actionurl.'">';
+	$output .= '<input type="hidden" name="clinic_id" value="'.$locdetails->clinic->clinic_id.'">';
+	$output .= '<input type="hidden" name="sycle_token" value="'.$locdetails->clinic->clinic_id.'">';
+
 
 	$output .= '<select class="apttype">';
 	foreach ($locdetails->appointment_types as $appointment_type) {
-		$output .= '<option value="'.$appointment_type->name.'" data-type="'.$appointment_type->appt_type_id.'" data-length="'.$appointment_type->length.'">'.$appointment_type->name.'</option>';
+		$output .= '<option value="'.esc_attr($appointment_type->name).'" data-name="'.esc_attr($appointment_type->name).'"data-type="'.esc_attr($appointment_type->appt_type_id).'" data-length="'.esc_attr($appointment_type->length).'">'.esc_attr($appointment_type->name).'</option>';
 	}
 
 	$output .= '</select>';
@@ -378,8 +387,7 @@ function shortcode_sycleclinicslist() {
 
 function shortcode_sycle() {
 // todo i8n?
-	$formtemplate = '<div class="sycleapi">
-	<div class="syclelookupresults"><ul class="clinicslist"></ul></div><!-- .syclelookupresults -->
+	$formtemplate = '<div class="sycleapi"><div class="syclelookupresults"><ul class="clinicslist"></ul></div><!-- .syclelookupresults -->
 	<form class="syclefindcloseclinic"><div id="locationField">
 	<input id="sycletoken" value="'.$this->get_token().'" type="hidden">
 	<input id="sycleautocomplete" placeholder="'.__('Enter your address or ZIP code','sycleapi').'" type="text" class="sycleautocomplete"></input>
@@ -442,7 +450,6 @@ function _scripts_styles_loader() {
 
 	$thesettings = Sycle_Appointments()->settings->get_settings();
 
-
 	// todo - genbrug token?
 	$localizeparams = array(
 		'ajax_url' => admin_url( 'admin-ajax.php' ),
@@ -465,7 +472,21 @@ function _scripts_styles_loader() {
 }
 
 
+public static function de_activation_functions () {
+	if ( ! current_user_can( 'activate_plugins' ) )
+		return;
+	$plugin = isset( $_REQUEST['plugin'] ) ? $_REQUEST['plugin'] : '';
+	check_admin_referer( "deactivate-plugin_{$plugin}" );
+	$thesettings = Sycle_Appointments()->settings->get_settings();
 
+	// If option in settings set to remove data.
+	if ($thesettings['cleanondeactivate']) {
+		global $wpdb;
+		$table_name = $wpdb->prefix . 'sb2_log';
+		$sql = "DROP TABLE IF EXISTS $table_name";
+		$wpdb->query($sql);
+	}
+}
 
 
 
@@ -492,6 +513,7 @@ public static function activation_functions () {
 
 require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 dbDelta( $sql );
+Sycle_Appointments()->log(__('Plugin Activated','sycleapi'));
 } // End install()
 
 

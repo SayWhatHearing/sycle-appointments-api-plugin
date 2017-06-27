@@ -5,7 +5,10 @@ jQuery(document).ready(function($) {
 /* Lars - really would have liked to get this to work - Maybe Michael knows?
 	Gist of it, apparently using $.ajax() you cannot send a body in the request when doing GET - so with GET, the data is parsed as parameters, which Sycle ignores.
 	With POST - Sycle rejects the request completely.
+	AFAIK - That means we have to parse all requests to sycle via PHP functions in plugin instead, adding overhead.
 	*/
+
+
 
 	// Detects the [cycleclinicslist] shortcode output, reads nonce and gets back a list of clinics
 	if( jQuery('.sycleclinicslist').length ) {
@@ -34,7 +37,7 @@ jQuery(document).ready(function($) {
 	} // if( jQuery('.sycleclinicslist').length )
 
 
-
+	// Detects the [sycle] autocomplete
 	// Location autocomplete shortcode communication
 	if( jQuery('.sycleautocomplete').length ) { // if the location autocomplete is shown.
 		$( ".sycleautocomplete" ).on( "click", function(e) {

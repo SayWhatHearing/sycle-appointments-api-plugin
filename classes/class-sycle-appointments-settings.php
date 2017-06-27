@@ -274,7 +274,6 @@ final class Sycle_Appointments_Settings {
 				'description' => __( 'Necessary for geolocation to work.', 'sycle-appointments' )
 			);
 
-
 			$settings_fields['logging'] = array(
 				'name' => __( 'Logging', 'sycle-appointments' ),
 				'type' => 'checkbox',

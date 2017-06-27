@@ -11,7 +11,15 @@ Ripped on https://github.com/mattyza/starter-plugin
 # SYCLE API PLUGIN
 
 ## Settings
-The settings page allows you to see
+The settings page is accessed under Settings->Sycle Appointements
+
+Sycle Username - Your username for Sycle API. Mandatory.
+Sycle Password - Your password for Sycle API. Mandatory.
+Sycle Subdomain - Set your subdomain for Sycle API.
+Google Places API Key - To use geolocation, this API key from Google is needed.
+Logging - Logs interactions and shows debug information on the settings page below.
+Remove all data - Turn this on to remove all data when deactivating the plugin.
+
 
 
 ## Shortcodes
@@ -24,13 +32,13 @@ This happens via the clinic id that is returned via Sycle. Internal code looks u
 Each location also had open graph data added, this can help search engines pick up location data for each clinic.
 
 ### [sycle]
-The 
+The
 
-### [sycledØ**]
+### [sycleclinicslist]
+
 This shortcode shows the available clinics for this user. To reduce load time, the shotcode itself just outputs the html container and a check in sycle.js detects if the list is shown.
 
 If the shortcode is displayed, a request goes via wp-ajax to return the clinics list.
-
 
 ### [syclebooking]
 
@@ -44,5 +52,5 @@ There are built in actions - e.g.
 
 This action contains two parameters:
 action - to separate different actions, eg. “look for clinic”
-data - the data submitted 
+data - the data submitted
 
