@@ -41,71 +41,21 @@ add_action( 'plugins_loaded', 'Sycle_Appointments' );
  * @author Matty
  */
 final class Sycle_Appointments {
-	/**
-	 * Sycle_Appointments The single instance of Sycle_Appointments.
-	 * @var 	object
-	 * @access  private
-	 * @since 	1.0.0
-	 */
+
 	private static $_instance = null;
-	/**
-	 * The token.
-	 * @var     string
-	 * @access  public
-	 * @since   1.0.0
-	 */
+
 	public $token;
-	/**
-	 * The version number.
-	 * @var     string
-	 * @access  public
-	 * @since   1.0.0
-	 */
+
 	public $version;
-	/**
-	 * The plugin directory URL.
-	 * @var     string
-	 * @access  public
-	 * @since   1.0.0
-	 */
+
 	public $plugin_url;
-	/**
-	 * The plugin directory path.
-	 * @var     string
-	 * @access  public
-	 * @since   1.0.0
-	 */
+
 	public $plugin_path;
-	// Admin - Start
-	/**
-	 * The admin object.
-	 * @var     object
-	 * @access  public
-	 * @since   1.0.0
-	 */
+
 	public $admin;
-	/**
-	 * The settings object.
-	 * @var     object
-	 * @access  public
-	 * @since   1.0.0
-	 */
+
 	public $settings;
-	// Admin - End
-	// Post Types - Start
-	/**
-	 * The post types we're registering.
-	 * @var     array
-	 * @access  public
-	 * @since   1.0.0
-	 */
-	public $post_types = array();
-	// Post Types - End
-	/**
-	 * Constructor function.
-	 * @access  public
-	 * @since   1.0.0
-	 */
+
 	public function __construct () {
 		$this->token 			= 'sycle-appointments';
 		$this->plugin_url 		= plugin_dir_url( __FILE__ );
@@ -386,10 +336,9 @@ function shortcode_sycleclinicslist() {
 
 
 function shortcode_sycle() {
-// todo i8n?
 	$formtemplate = '<div class="sycleapi"><div class="syclelookupresults"><ul class="clinicslist"></ul></div><!-- .syclelookupresults -->
 	<form class="syclefindcloseclinic"><div id="locationField">
-	<input id="sycletoken" value="'.$this->get_token().'" type="hidden">
+	<input id="sycletoken" value="'.Sycle_Appointments()->get_token().'" type="hidden">
 	<input id="sycleautocomplete" placeholder="'.__('Enter your address or ZIP code','sycleapi').'" type="text" class="sycleautocomplete"></input>
 	</div></form></div><!-- .sycleapi -->';
 	return $formtemplate;
