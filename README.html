@@ -16,5 +16,60 @@
 <li>Clean up on deactivate - Lars</li>
 </ul>
 
+<h1 id="sycleapiplugin">SYCLE API PLUGIN</h1>
+
+<h2 id="settings">Settings</h2>
+
+<p>The settings page is accessed under Settings-&gt;Sycle Appointements</p>
+
+<p>Sycle Username - Your username for Sycle API. Mandatory.
+Sycle Password - Your password for Sycle API. Mandatory.
+Sycle Subdomain - Set your subdomain for Sycle API.
+Google Places API Key - To use geolocation, this API key from Google is needed.
+Logging - Logs interactions and shows debug information on the settings page below.
+Remove all data - Turn this on to remove all data when deactivating the plugin.</p>
+
+<h2 id="shortcodes">Shortcodes</h2>
+
+<p>To have some flexibility in using the plugin I implemented a couple of shortcodes.</p>
+
+<p>General note - Each clinic that is listed is contained in a form that links to the location url of the location to continue booking process there.</p>
+
+<p>This happens via the clinic id that is returned via Sycle. Internal code looks up the landing page via the post meta field <strong>sycle_clinic_id</strong> that matches.</p>
+
+<p>Each location also had open graph data added, this can help search engines pick up location data for each clinic.</p>
+
+<p>### [sycle]
+The</p>
+
+<p>### [sycleclinicslist]</p>
+
+<p>This shortcode shows the available clinics for this user. To reduce load time, the shotcode itself just outputs the html container and a check in sycle.js detects if the list is shown.</p>
+
+<p>If the shortcode is displayed, a request goes via wp-ajax to return the clinics list.</p>
+
+<p>### [syclebooking]</p>
+
+<p>Paramaters:
+id - optional. If this is not parsed, the shortcode will look for the post meta value sycle_clinic_id on the current page and use that if found. If not, an error is shown.</p>
+
+<p>Example: [syclebooking id=&#8220;2803&#8211;9506&#8221;]</p>
+
+<p>Notes: The id parameter is optional. If an id parameter is included, then that will be used.</p>
+
+<p>If there is no id= paramater, the plugin looks to see if the clinic id is passed via $_POST[&#8216;sycle_clinic_id&#8217;].</p>
+
+<p>If there is no id= paramater or passed via POST, final step is to look up the &#8220;sycle_clinic_id&#8221; meta value for the current page the shortcode is on.</p>
+
+<p>If none of the 3 methods to look up the clinic id is succesfull, an error will be displayed. Only for admins, regular users just have an empty output.</p>
+
+<h2 id="code">Code</h2>
+
+<p>There are built in actions - e.g.</p>
+
+<p>This action contains two parameters:
+action - to separate different actions, eg. “look for clinic”
+data - the data submitted</p>
+
 </body>
 </html>

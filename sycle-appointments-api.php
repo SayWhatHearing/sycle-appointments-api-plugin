@@ -70,6 +70,7 @@ final class Sycle_Appointments {
 			$this->admin = Sycle_Appointments_Admin::instance();
 		}
 		add_shortcode('sycle', array( $this, 'shortcode_sycle' ) );
+		add_shortcode('syclebooking', array( $this, 'shortcode_syclebooking' ) );
 		add_shortcode('sycleclinicslist', array( $this, 'shortcode_sycleclinicslist' ) );
 
 
@@ -284,7 +285,7 @@ function return_clinic_markup($locdetails) {
 	}
 
 	$output .= '<form method="post" action="'.$actionurl.'">';
-	$output .= '<input type="hidden" name="clinic_id" value="'.$locdetails->clinic->clinic_id.'">';
+	$output .= '<input type="hidden" name="sycle_clinic_id" value="'.$locdetails->clinic->clinic_id.'">';
 	$output .= '<input type="hidden" name="sycle_token" value="'.$locdetails->clinic->clinic_id.'">';
 
 
@@ -345,13 +346,54 @@ function shortcode_sycle() {
 }
 
 
+function shortcode_syclebooking($atts = []) {
+	$output = '<div class="sycleapi">';
+	$atts = array_change_key_case((array)$atts, CASE_LOWER);
+
+	// Lets see if the shortcode has the id paramater
+	if (isset($atts['id'])) {
+		$sycle_clinic_id = sanitize_text_field($atts['id']);
+	}
+
+	// If not, lets see if it is parsed via POST
+	if ( (!isset($sycle_clinic_id)) && (isset($_POST['sycle_clinic_id'])) ) {
+		$sycle_clinic_id = sanitize_text_field($_POST['sycle_clinic_id']);
+	}
+
+	// Final chance, looking up via post meta.
+	if (!isset($sycle_clinic_id)) {
+		global $post;
+		$meta = get_post_meta($post->ID, 'sycle_clinic_id', true);
+		if ($meta) $sycle_clinic_id = $meta;
+	}
+
+	// Output errors for admins.
+	if (!isset($sycle_clinic_id)) {
+
+		$current_user = wp_get_current_user();
+
+		// Error for admins - perhaps add something for regular visitors?
+		if (user_can( $current_user, 'administrator' )) {
+			$output .= '<div class="sycleerror">'.__('[syclebooking] Shortcode needs id="" paramater.','sycleapi').'</div><!-- .sycleerror -->';
+		}
+		else {
+			// Here we can add to $output for errors for non-admins
+		}
+
+	}
+
+	$output .= '</div><!-- .sycleapi -->';
+	return $output;
+}
+
+
 	/**
 	 * Load the localisation file.
 	 * @access  public
 	 * @since   1.0.0
 	 */
 	public function load_plugin_textdomain() {
-		load_plugin_textdomain( 'sycle-appointments', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
+		load_plugin_textdomain( 'sycleapi', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
 	} // End load_plugin_textdomain()
 
 

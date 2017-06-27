@@ -43,9 +43,17 @@ If the shortcode is displayed, a request goes via wp-ajax to return the clinics 
 ### [syclebooking]
 
 Paramaters:
-clinic_id - optional. If this is not parsed, the shortcode will look for the post meta value sycle_clinic_id on the current page and use that if found.  If not, an error is shown.
+id - optional. If this is not parsed, the shortcode will look for the post meta value sycle_clinic_id on the current page and use that if found.  If not, an error is shown.
 
+Example: [syclebooking id="2803-9506"]
 
+Notes: The id parameter is optional. If an id parameter is included, then that will be used.
+
+If there is no id= paramater, the plugin looks to see if the clinic id is passed via $_POST['sycle_clinic_id'].
+
+If there is no id= paramater or passed via POST, final step is to look up the "sycle_clinic_id" meta value for the current page the shortcode is on.
+
+If none of the 3 methods to look up the clinic id is succesfull, an error will be displayed. Only for admins, regular users just have an empty output.
 
 ## Code
 There are built in actions - e.g.
