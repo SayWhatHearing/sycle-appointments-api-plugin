@@ -1,3 +1,4 @@
+/*global sycle_ajax_object:true*/
 jQuery(document).ready(function($) {
 /*
 REFS:
@@ -12,11 +13,12 @@ http://jqueryvalidation.org/documentation/
 	AFAIK - That means we have to parse all requests to sycle via PHP functions in plugin instead, adding overhead.
 	*/
 
+/*jshint unused:false, eqnull:true */
 
 
-	$(".datepicker").datepicker(); // TODO
+
 // TODO:
-	$( ".sycle-booking" ).validate();
+
 /*
 
 {
@@ -37,7 +39,49 @@ http://jqueryvalidation.org/documentation/
 
 
 
-	// Detects the [cycleclinicslist] shortcode output, reads nonce and gets back a list of clinics
+
+
+	// Detects the [syclebooking] shortcode outputs
+	if( jQuery('.sycle-booking').length ) {
+		if ( (sycle_ajax_object.hasOwnProperty("sycle_nonce")) || (sycle_ajax_object.hasOwnProperty("ajax_url")) ) {
+
+			console.log('[syclebooking] detected');
+
+			$( ".sycle-booking" ).validate();
+			$(".sycle-booking .sycle_booking_date").datepicker();
+
+			/*
+			$( ".sycle-booking" ).each( function( index, element ){
+				jQuery.ajax({
+					url : sycle_ajax_object.ajax_url,
+					type : 'post',
+					data : {
+						action : 'sycle_get_clinics_list',
+						_ajax_nonce: sycle_ajax_object.sycle_nonce
+					},
+					success : function( response ) {
+						var clinics = $.parseJSON(response);
+						$.each( clinics.clinic_details, function( key, clinic ) {
+							$(element).find('.clinicslist').append('<li>'+clinic+'</li>').hide().fadeIn(350);
+						});
+					},
+					error: function(error){
+						console.log("Error:"); // todo remove in prod
+						console.log(error); // todo remove in prod
+					}
+				}); // end ajax
+			}); // end foreach
+			*/
+
+
+		} // Hasownproperty
+	} // if( jQuery('.sycleclinicslist').length )
+
+
+
+
+
+	// Detects the [sycleclinicslist] shortcode output, reads nonce and gets back a list of clinics
 	if( jQuery('.sycleclinicslist').length ) {
 		if ( (sycle_ajax_object.hasOwnProperty("sycle_nonce")) || (sycle_ajax_object.hasOwnProperty("ajax_url")) ) {
 			$( ".sycleclinicslist" ).each( function( index, element ){

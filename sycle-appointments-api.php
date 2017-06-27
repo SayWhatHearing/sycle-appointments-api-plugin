@@ -390,7 +390,17 @@ function shortcode_syclebooking($atts = []) {
 
 		$output .= '<form action="" class="sycle-booking sycle-clinic-'.esc_attr($sycle_clinic_id).'" method="POST" enctype="multipart/form-data" >
 		<fieldset>
-				<label for="sycle_customer_title">Your Title</label>
+		<label for="sycle_booking_date">Choose date</label>
+		<input type="text" name="sycle_booking_date" class="sycle_booking_date" required/>
+		</fieldset>
+		<fieldset>
+
+			<label for="sycle_booking_time">Time</label>
+			<input type="text" name="sycle_booking_time" class="sycle_booking_time" required/>
+
+		</fieldset>
+		<fieldset>
+		<label for="sycle_customer_title">Your Title</label>
 		<select class="required" name="sycle_customer_title" class="sycle_customer_title">
 		<option value="" selected="selected">- Select -</option>
 		<option value="Mr">Mr</option>
