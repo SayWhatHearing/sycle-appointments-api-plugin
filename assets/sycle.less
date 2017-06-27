@@ -25,6 +25,23 @@
 	background-color: #eee;
 }
 
+
+
+.sycleapi .sycle-booking label.error {
+	color: #ff0000;
+	margin-top: 5px;
+}
+/* Set a 1 pixel transparent border to prevent jumps when setting .error state */
+.sycleapi .sycle-booking input,
+.sycleapi .sycle-booking select {
+	border: 1px solid transparent;
+}
+
+.sycleapi .sycle-booking input.error,
+.sycleapi .sycle-booking select.error {
+	border: 1px solid #ff0000;
+}
+
 .sycleapi #locationField {
 	margin-bottom: 10px;
 }

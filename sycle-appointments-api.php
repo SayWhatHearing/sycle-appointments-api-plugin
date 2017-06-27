@@ -349,7 +349,7 @@ function shortcode_sycle() {
 function shortcode_syclebooking($atts = []) {
 	$output = '<div class="sycleapi">';
 	$atts = array_change_key_case((array)$atts, CASE_LOWER);
-
+// TODO - options "showmeta", ...
 	// Lets see if the shortcode has the id paramater
 	if (isset($atts['id'])) {
 		$sycle_clinic_id = sanitize_text_field($atts['id']);
@@ -379,7 +379,41 @@ function shortcode_syclebooking($atts = []) {
 		else {
 			// Here we can add to $output for errors for non-admins
 		}
+		return $output;
+	}
 
+	if (isset($sycle_clinic_id)) {
+	//	$output .= '<div id="datepicker">test</div>';
+
+		$output .= '<h3>'.__('Book an appointment','sycleapi').'</h3>';
+		$output .= 'At ...todo</br>';
+
+		$output .= '<form action="" class="sycle-booking sycle-clinic-'.esc_attr($sycle_clinic_id).'" method="POST" enctype="multipart/form-data" >
+		<fieldset>
+				<label for="sycle_customer_title">Your Title</label>
+		<select class="required" name="sycle_customer_title" class="sycle_customer_title">
+		<option value="" selected="selected">- Select -</option>
+		<option value="Mr">Mr</option>
+		<option value="Mrs">Mrs</option>
+		<option value="Miss">Miss</option>
+		<option value="Ms">Ms</option>
+		<option value="Dr">Dr</option>
+		</select>
+		</fieldset>
+		<fieldset>
+		<label for="sycle_customer_name">Your Name</label>
+		<input type="text" name="sycle_customer_name" class="sycle_customer_name" required/>
+		</fieldset>
+		<fieldset>
+		<label for="sycle_customer_email">Your Email</label>
+		<input type="text" name="sycle_customer_email" class="sycle_customer_email email" required/>
+		</fieldset>
+
+		<fieldset>
+		<button type="submit" name="sycle-submit" >Send Query</button>
+		</fieldset>'.wp_nonce_field( 'submit_contact_form' , 'nonce_field_for_submit_contact_form');
+		$output .= '<input type="text" class="datepicker" name="sycle_datepicker" value=""/>';
+		$output .= '</form>';
 	}
 
 	$output .= '</div><!-- .sycleapi -->';
@@ -452,7 +486,8 @@ function _scripts_styles_loader() {
 		wp_enqueue_script('gplaces', 'https://maps.googleapis.com/maps/api/js?key='.esc_attr($thesettings['places_api']).'&libraries=places', array('jquery','sycle'),false,true);
 	}
 
-	wp_register_script('sycle', $this->plugin_url . 'js/sycle-min.js', array('jquery'),false,true);
+	// This is the minified js version, dev is in /assets/js/
+	wp_register_script('sycle', $this->plugin_url . 'js/sycle-min.js', array('jquery','jquery-validate-script','jquery-ui-datepicker'),false,true);
 	wp_enqueue_style('sycle', $this->plugin_url . 'css/sycle.css', array(), false);
 	wp_localize_script(
 		'sycle',
@@ -460,6 +495,19 @@ function _scripts_styles_loader() {
 		$localizeparams
 	);
 	wp_enqueue_script('sycle');
+
+	// TODO - Check the shortcode is used before loading bloat .js
+	wp_enqueue_script('jquery-ui-datepicker');
+	// TODO - Check the shortcode is used before loading bloat .js
+	wp_register_script( 'jquery-validate-script',  $this->plugin_url . 'assets/js/jquery-validation/dist/jquery.validate.min.js' ,array( 'jquery'));
+
+	wp_enqueue_style( 'jquery-ui' );
+
+	// TODO - we can do this better - include style in plugin css perhaps?
+	// Also: https://github.com/stuttter/wp-datepicker-styling/blob/master/datepicker.css
+	wp_enqueue_style('e2b-admin-ui-css','//ajax.googleapis.com/ajax/libs/jqueryui/1.9.0/themes/base/jquery-ui.css',false,"1.9.0",false);
+
+
 }
 
 

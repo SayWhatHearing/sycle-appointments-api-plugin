@@ -1,11 +1,38 @@
 jQuery(document).ready(function($) {
+/*
+REFS:
+http://jqueryvalidation.org/documentation/
 
+*/
 	console.log('[Sycle] JS loaded'); // todo remove in prod
 
 /* Lars - really would have liked to get this to work - Maybe Michael knows?
 	Gist of it, apparently using $.ajax() you cannot send a body in the request when doing GET - so with GET, the data is parsed as parameters, which Sycle ignores.
 	With POST - Sycle rejects the request completely.
 	AFAIK - That means we have to parse all requests to sycle via PHP functions in plugin instead, adding overhead.
+	*/
+
+
+
+	$(".datepicker").datepicker(); // TODO
+// TODO:
+	$( ".sycle-booking" ).validate();
+/*
+
+{
+		rules: {
+			sycle_customer_name: {
+				required: true
+			},
+			sycle_customer_email: {
+				required: true,
+				email: true
+			},
+			sycle_customer_name: {
+				required: true
+			}
+		}
+	}
 	*/
 
 
@@ -75,16 +102,16 @@ jQuery(document).ready(function($) {
 
 
 
-			jQuery.ajax({
-				url : sycle_ajax_object.ajax_url,
-				type : 'post',
-				data : {
-					action : 'sycle_get_search_results',
-					_ajax_nonce: sycle_ajax_object.sycle_nonce,
-					addressfield: place_components
-				},
-				success : function( response ) {
-					var clinics = $.parseJSON(response);
+				jQuery.ajax({
+					url : sycle_ajax_object.ajax_url,
+					type : 'post',
+					data : {
+						action : 'sycle_get_search_results',
+						_ajax_nonce: sycle_ajax_object.sycle_nonce,
+						addressfield: place_components
+					},
+					success : function( response ) {
+						var clinics = $.parseJSON(response);
 						$(e.target).closest('.sycleapi').find('.clinicslist').empty(); // resets results
 
 						$.each( clinics.clinic_details, function( key, clinic ) {
