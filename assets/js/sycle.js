@@ -7,15 +7,30 @@ http://jqueryvalidation.org/documentation/
 */
 	console.log('[Sycle] JS loaded'); // todo remove in prod
 
-/* Lars - really would have liked to get this to work - Maybe Michael knows?
+
+
+
+	/*
+	This is to update two hidden fields in the form of each clinic listing. This is to parse two values, based what appointment type the customer is selecting. Two values are pased from the select data- attributes and the hidden input fields are updated.
+
+	This reduces further
+	*/
+	$('.sycleapi').on('change','.sycle_apttype',function(event){
+		var optionSelected = $("option:selected", this);
+		//var type = optionSelected.attr('data-type');
+		var length = optionSelected.attr('data-length');
+		var name = optionSelected.attr('data-name');
+		$(event.target).parent().find('.sycle_aptname').val(name);
+		$(event.target).parent().find('.sycle_aptlength').val(length);
+	});
+
+	/*
+	Lars - really would have liked to get this to work - Maybe Michael knows?
 	Gist of it, apparently using $.ajax() you cannot send a body in the request when doing GET - so with GET, the data is parsed as parameters, which Sycle ignores.
 	With POST - Sycle rejects the request completely.
 	AFAIK - That means we have to parse all requests to sycle via PHP functions in plugin instead, adding overhead.
+
 	*/
-
-/*jshint unused:false, eqnull:true */
-
-
 
 // TODO:
 
@@ -39,16 +54,40 @@ http://jqueryvalidation.org/documentation/
 
 
 
-
-
 	// Detects the [syclebooking] shortcode outputs
 	if( jQuery('.sycle-booking').length ) {
 		if ( (sycle_ajax_object.hasOwnProperty("sycle_nonce")) || (sycle_ajax_object.hasOwnProperty("ajax_url")) ) {
 
-			console.log('[syclebooking] detected');
-
 			$( ".sycle-booking" ).validate();
-			$(".sycle-booking .sycle_booking_date").datepicker();
+			$(".sycle-booking .sycle_booking_date").datepicker({
+				altFormat: "yyyy-mm-dd"
+			});
+
+// todo - set up an event to track changes to datetime
+/*
+
+$( ".selector" ).datepicker( "setDate", "10/12/2012" );
+*/
+
+
+/*
+
+$("#myname").find(':selected').attr('isred');
+
+*/
+
+
+/*
+********* THESE VALUES NEEDS TO BE PARSED FOR THE /api/vendor/open_slots
+token - parsed
+clinic_id -parsed
+start_date -todo
+end_date - todo
+length  - todo ? - how to get ?
+appt_reason - todo, not required
+appt_type - todo, not required
+
+*/
 
 			/*
 			$( ".sycle-booking" ).each( function( index, element ){
@@ -119,7 +158,7 @@ http://jqueryvalidation.org/documentation/
 				/** @type {!HTMLInputElement} */(document.getElementById('sycleautocomplete')),
 				{types: ['geocode']});
 
-			var addressfield = '#';
+
 			//autocomplete.addListener('place_changed', fillInAddress);
 			autocomplete.addListener('place_changed', function() {
 				// var data = $("#search_form").serialize();
@@ -140,8 +179,8 @@ http://jqueryvalidation.org/documentation/
 					});
 				});
 
-				var addressfield = streetAddrDisplay.join(' ');
-				console.log('new addrString '+addressfield);
+				//var addressfield = streetAddrDisplay.join(' ');
+
 				// show_submit_data(data);
 
 
@@ -159,7 +198,7 @@ http://jqueryvalidation.org/documentation/
 						$(e.target).closest('.sycleapi').find('.clinicslist').empty(); // resets results
 
 						$.each( clinics.clinic_details, function( key, clinic ) {
-							$(e.target).closest('.sycleapi').find('.clinicslist').append('<li>'+clinic+'</li>').hide().fadeIn(350);
+							$(e.target).closest('.sycleapi').find('.clinicslist').append('<li class="clinic">'+clinic+'</li>').hide().fadeIn(350);
 						});
 					},
 					error: function(error){
