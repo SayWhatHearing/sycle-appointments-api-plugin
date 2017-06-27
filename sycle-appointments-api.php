@@ -248,7 +248,7 @@ function ajax_do_sycle_get_clinics_list() {
 	$output = array();
 	if (is_array($clinics_list->clinic_details)) {
 		foreach ($clinics_list->clinic_details as $clinic) {
-			$output['clinic_details'][] = $this->return_clinic_markup($clinic);
+			$output['clinic_details'][] = $this->return_clinic_markup($clinic,$token);
 		}
 	}
 	echo json_encode($output);
@@ -256,7 +256,9 @@ function ajax_do_sycle_get_clinics_list() {
 }
 
 // Returns individual location in marked up format
-function return_clinic_markup($locdetails) {
+// locdetails - location object with details
+// parsedtoken - If set, reuses the token for future api requests
+function return_clinic_markup($locdetails,$parsedtoken) {
 	global $wpdb;
 
 	$output = '';
@@ -286,12 +288,14 @@ function return_clinic_markup($locdetails) {
 
 	$output .= '<form method="post" action="'.$actionurl.'">';
 	$output .= '<input type="hidden" name="sycle_clinic_id" value="'.$locdetails->clinic->clinic_id.'">';
-	$output .= '<input type="hidden" name="sycle_token" value="'.$locdetails->clinic->clinic_id.'">';
 
+	if ($parsedtoken) {
+		$output .= '<input type="hidden" name="sycle_token" value="'.$parsedtoken.'">';
+	}
 
-	$output .= '<select class="apttype">';
+	$output .= '<select class="sycle_apttype" name="sycle_apttype">';
 	foreach ($locdetails->appointment_types as $appointment_type) {
-		$output .= '<option value="'.esc_attr($appointment_type->name).'" data-name="'.esc_attr($appointment_type->name).'"data-type="'.esc_attr($appointment_type->appt_type_id).'" data-length="'.esc_attr($appointment_type->length).'">'.esc_attr($appointment_type->name).'</option>';
+		$output .= '<option value="'.esc_attr($appointment_type->appt_type_id).'" data-name="'.esc_attr($appointment_type->name).'"data-type="'.esc_attr($appointment_type->appt_type_id).'" data-length="'.esc_attr($appointment_type->length).'">'.esc_attr($appointment_type->name).'</option>';
 	}
 
 	$output .= '</select>';
@@ -303,6 +307,12 @@ function return_clinic_markup($locdetails) {
 
 	return $output;
 }
+
+
+
+
+
+
 
 
 function return_clinics_list($token) {
@@ -345,9 +355,27 @@ function shortcode_sycle() {
 	return $formtemplate;
 }
 
-
+// FUNCTION RETURNS the booking form
 function shortcode_syclebooking($atts = []) {
 	$output = '<div class="sycleapi">';
+	error_log('post '.print_r($_POST,true));
+
+	/*
+[27-Jun-2017 20:56:36 UTC] post Array
+(
+    [sycle_clinic_id] => 2803-9506
+    [sycle_token] => 8ae2a37752752ab40871e5fae8170b
+    [sycle_apttype] => 2803-1
+    [submit] => Book Time
+)
+
+
+	*/
+
+	if (isset($_POST['sycle_token'])) {
+		$sycle_token = sanitize_text_field($_POST['sycle_token']);
+	}
+
 	$atts = array_change_key_case((array)$atts, CASE_LOWER);
 // TODO - options "showmeta", ...
 	// Lets see if the shortcode has the id paramater
@@ -388,13 +416,18 @@ function shortcode_syclebooking($atts = []) {
 		$output .= '<h3>'.__('Book an appointment','sycleapi').'</h3>';
 		$output .= 'At ...todo</br>';
 
-		$output .= '<form action="" class="sycle-booking sycle-clinic-'.esc_attr($sycle_clinic_id).'" method="POST" enctype="multipart/form-data" >
-		<fieldset>
+		$output .= '<form action="" class="sycle-booking sycle-clinic-'.esc_attr($sycle_clinic_id).'" method="POST" enctype="multipart/form-data" >';
+
+		if (isset($sycle_token)) {
+			$output .= '<input type="hidden" name="sycle_booking_token" value="'.esc_attr($sycle_token).'">';
+		}
+
+		$output .= '<fieldset>
 		<label for="sycle_booking_date">Choose date</label>
 		<input type="text" name="sycle_booking_date" class="sycle_booking_date" required/>
 		</fieldset>
 		<fieldset>
-
+			### this will be loaded with available times from the clinic ###
 			<label for="sycle_booking_time">Time</label>
 			<input type="text" name="sycle_booking_time" class="sycle_booking_time" required/>
 
