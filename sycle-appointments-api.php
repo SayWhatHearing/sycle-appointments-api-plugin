@@ -147,6 +147,11 @@ if no date is parsed, generate todays date
     	$parseddata['token'] = sanitize_text_field($_POST['sycle_booking_token']);
     }
 
+    // fallback way to get token if not parsed
+    if (!isset($parseddata['token'])) {
+    	$parseddata['token'] = $this->get_token();
+    }
+
     if (isset($_POST['sycle_clinic_id'])) {
     	$parseddata['clinic_id'] = sanitize_text_field($_POST['sycle_clinic_id']);
     }
@@ -184,65 +189,32 @@ $this->log('ajax_do_sycle_get_open_slots took '.$lookup_open_slots.'s');
 
 	$decoded = json_decode($lookupresult);
 //error_log('decoded '.print_r($decoded,true));
-/*
 
-[28-Jun-2017 17:33:34 UTC] decoded stdClass Object
-(
-    [open_slots] => Array
-        (
-            [0] => stdClass Object
-                (
-                    [staff] => stdClass Object
-                        (
-                            [staff_id] => 2803-1
-                            [first_name] => Jason
-                            [last_name] => Wilson
-                            [title] => Mr.
-                            [suffix] =>
-                            [phone1] => 6
-                        )
-
-                    [clinic] => stdClass Object
-                        (
-                            [clinic_id] => 2803-9506
-                            [name] => AMG Test Parentco
-                            [address] => stdClass Object
-                                (
-                                    [street1] => 1901 Floyd St.
-                                    [city] => FL
-                                    [state] => 34239
-                                    [country] => USA
-                                    [zip] =>
-                                )
-
-                            [phone1] => 7865634010
-                            [phone2] =>
-                            [collision_limit] => 1
-                        )
-
-                    [slots] => Array
-                        (
-                            [0] => stdClass Object
-                                (
-                                    [date] => 2017-06-29
-                                    [time] => 08:00:00
-                                    [length] => 90
-*/
-//error_log('decoded '.print_r($decoded,true));
 $output = '';
+
 if (is_object($decoded)) {
-	$output .= '<ul class="sycle_open_slots">';
+	error_log('decoded '.print_r($decoded,true));
+
 	foreach ($decoded->open_slots as $open_slot) {
+			$output .= '<div class="sycle_open_slots_container">';
+			$output .= '<div class="sycle_open_slots_meta">Staff: '; // todo
+			$output .= $open_slot->staff->title.' '.$open_slot->staff->first_name.' '.$open_slot->staff->last_name;
+			$output .= '</div>';
+			$output .= '<ul class="sycle_open_slots">';
 		//error_log('open_slot '.print_r($open_slot,true));
 		foreach ($open_slot->slots as $slot) {
 		//	error_log(print_r($slot,true));
 
-			$output .= '<li>'.$slot->time.'</li>';
+			$output .= '<li>';
+$output .= '<label><input type="radio" name="sycle_booking_time" required/>
+  '.$slot->time.'</label>';
+			$output .= '</li>';
 		}
+	$output .= '</ul><!-- .sycle_open_slots -->';
+	$output .= '</div><!-- .sycle_open_slots_container -->';
 
 	}
 
-	$output .= '</ul><!-- .sycle_open_slots -->';
 }
 
 	//error_log('output '.print_r($output,true));
@@ -607,6 +579,22 @@ function shortcode_syclebooking($atts = []) {
   }
 
     if (isset($sycle_clinic_id)) {
+
+/*
+TODO
+
+// TODO - default
+    if (!$sycle_aptlength) $sycle_aptlength = 30;
+
+
+IF APT_LENGTH IS NOT PARSED, MAKE SURE TO DO A LOOKUP OF POSSIBLE OPTIONS BASED ON CLINIC ID
+
+
+*/
+
+
+
+
     	$output .= '<h3>'.__('Book an appointment','sycle-appointments').'</h3>';
 
     	$output .= 'At ...todo</br>'; // TODO LOOK UP DETAILS VIA API?
@@ -654,6 +642,7 @@ function shortcode_syclebooking($atts = []) {
     <input type="text" name="sycle_booking_date" class="sycle_booking_date" required/>
     </fieldset>
     <fieldset>
+    <label>Choose time</label>
     <div class="sycle_timeresults">'.__('Choose a date to see available times','sycle-appointments').'</div><!-- .sycle_timeresults -->
     </fieldset>
     <fieldset>

@@ -40,7 +40,7 @@ http://jqueryvalidation.org/documentation/
 		var sycle_apttype			 		= $(this).parents().find("[name='sycle_apttype']").val();
 		var sycle_aptname					= $(this).parents().find("[name='sycle_aptname']").val();
 
-		$('.sycle_timeresults').fadeOut()
+		$('.sycle_timeresults').hide().html('Loading...').addClass('loader').fadeIn('fast');
 
 		jQuery.ajax({
 			url : sycle_ajax_object.ajax_url,
@@ -57,7 +57,7 @@ http://jqueryvalidation.org/documentation/
 			},
 			success : function( response ) {
 				var parsed = $.parseJSON(response);
-				$('.sycle_timeresults').fadeOut().html(parsed).fadeIn();
+				$('.sycle_timeresults').hide().removeClass('loader').html(parsed).show();
 			},
 			error: function(error){
 						console.log("Error:"); // todo remove in prod
@@ -80,7 +80,14 @@ http://jqueryvalidation.org/documentation/
 	if( jQuery('.sycle-booking').length ) {
 		if ( (sycle_ajax_object.hasOwnProperty("sycle_nonce")) || (sycle_ajax_object.hasOwnProperty("ajax_url")) ) {
 
-			$( ".sycle-booking" ).validate();
+			$( ".sycle-booking" ).validate({
+    // other options,
+    rules: {
+        sycle_booking_date: { // <- NAME of every radio in the same group
+            required: true
+        }
+    }
+});
 
 			// Triggers the change event on selecting a new date, but only if a -different- date has been chosen
 			var Today = new Date();
