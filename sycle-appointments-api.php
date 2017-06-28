@@ -284,9 +284,9 @@ final class Sycle_Appointments {
 
 
 // Returns endpoint url for API - appends endpoint if added
-	function get_api_url($endpoint = '') {
-		$thesettings = Sycle_Appointments()->settings->get_settings();
-		$sycle_subdomain = $thesettings['sycle_subdomain'];
+		function get_api_url($endpoint = '') {
+			$thesettings = Sycle_Appointments()->settings->get_settings();
+			$sycle_subdomain = $thesettings['sycle_subdomain'];
 		if (!$sycle_subdomain) $sycle_subdomain = 'amg'; // default
 		$finalurl = trailingslashit('https://'.$sycle_subdomain.'.sycle.net/api/vendor/'.$endpoint);
 		return $finalurl;
@@ -570,43 +570,50 @@ final class Sycle_Appointments {
     		$output .= '<input type="hidden" name="sycle_aptlength" value="'.esc_attr($sycle_aptlength).'">';
     	}
 
-			$output .= '<fieldset>
-			<label for="sycle_booking_date">Choose date</label>
-			<input type="text" name="sycle_booking_date" class="sycle_booking_date" required/>
-			</fieldset>
-			<fieldset>
-			<label>Choose time</label>
-			<div class="sycle_timeresults">'.__('Choose a date to see available times','sycle-appointments').'</div><!-- .sycle_timeresults -->
-			</fieldset>
-			<fieldset>
-			<label for="sycle_customer_title">Your Title</label>
-			<select class="required" name="sycle_customer_title" class="sycle_customer_title">
-			<option value="" selected="selected">- Select -</option>
-			<option value="Mr">Mr</option>
-			<option value="Mrs">Mrs</option>
-			<option value="Miss">Miss</option>
-			<option value="Ms">Ms</option>
-			<option value="Dr">Dr</option>
-			</select>
-			</fieldset>
-			<fieldset>
-			<label for="sycle_customer_name">Your Name</label>
-			<input type="text" name="sycle_customer_name" class="sycle_customer_name" required/>
-			</fieldset>
-			<fieldset>
-			<label for="sycle_customer_email">Your Email</label>
-			<input type="text" name="sycle_customer_email" class="sycle_customer_email email" required/>
-			</fieldset>
-
-			<fieldset>
-			<button type="submit" name="sycle-submit" class="sycle-booking-submit">Send Query</button>
-			</fieldset>'.wp_nonce_field( 'submit_contact_form' , 'nonce_field_for_submit_contact_form');
-			$output .= '<input type="text" class="datepicker" name="sycle_datepicker" value=""/>';
-			$output .= '</form>';
-		}
-		$output .= '</div><!-- .sycleapi -->';
-		return $output;
-	}
+    	$output .= '<fieldset>
+    	<label for="sycle_booking_date">Choose Date *</label>
+    	<input type="text" name="sycle_booking_date" class="sycle_booking_date" required/>
+    	</fieldset>
+    	<fieldset>
+    	<label>Choose Time *</label>
+    	<div class="sycle_timeresults">'.__('Choose a date to see available times','sycle-appointments').'</div><!-- .sycle_timeresults -->
+    	</fieldset>
+    	<fieldset>
+    	<label for="sycle_customer_title">Your Title *</label>
+    	<select class="required" name="sycle_customer_title" class="sycle_customer_title">
+    	<option value="" selected="selected">- Select -</option>
+    	<option value="Mr">Mr</option>
+    	<option value="Mrs">Mrs</option>
+    	<option value="Miss">Miss</option>
+    	<option value="Ms">Ms</option>
+    	<option value="Dr">Dr</option>
+    	</select>
+    	</fieldset>
+    	<fieldset>
+    	<label for="sycle_customer_first_name">Your First Name *</label>
+    	<input type="text" name="sycle_customer_first_name" class="sycle_customer_first_name" required/>
+    	</fieldset>
+    	<fieldset>
+    	<label for="sycle_customer_last_name">Your Last Name *</label>
+    	<input type="text" name="sycle_customer_last_name" class="sycle_customer_last_name" required/>
+    	</fieldset>
+    	<fieldset>
+    	<label for="sycle_customer_phone">Your Phone * </label>
+    	<input type="text" name="sycle_customer_phone" class="sycle_customer_phone" required/>
+    	</fieldset>
+    	<fieldset>
+    	<label for="sycle_customer_email">Your Email</label>
+    	<input type="text" name="sycle_customer_email" class="sycle_customer_email email"/>
+    	</fieldset>
+    	<fieldset>
+    	<button type="submit" name="sycle-submit" class="sycle-booking-submit">Send Query</button>
+    	</fieldset>'.wp_nonce_field( 'submit_contact_form' , 'nonce_field_for_submit_contact_form');
+    	$output .= '<input type="text" class="datepicker" name="sycle_datepicker" value=""/>';
+    	$output .= '</form>';
+    }
+    $output .= '</div><!-- .sycleapi -->';
+    return $output;
+  }
 
 
 	/**
