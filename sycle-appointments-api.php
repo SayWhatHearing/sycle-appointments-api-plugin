@@ -90,6 +90,18 @@ final class Sycle_Appointments {
 		// Ajax for logging lookups and searches
 		add_action('wp_ajax_sycle_log_lookup', array(&$this, 'ajax_do_sycle_log_lookup'));
 		add_action('wp_ajax_nopriv_sycle_log_lookup', array(&$this, 'ajax_do_sycle_log_lookup'));
+
+
+
+
+
+		// Ajax for logging lookups and searches
+		add_action('wp_ajax_sycle_get_open_slots', array(&$this, 'ajax_do_sycle_get_open_slots'));
+		add_action('wp_ajax_nopriv_sycle_get_open_slots', array(&$this, 'ajax_do_sycle_get_open_slots'));
+
+
+
+
 	} // End __construct()
 
 
@@ -110,44 +122,134 @@ final class Sycle_Appointments {
 	} // End instance()
 
 
+	function ajax_do_sycle_get_open_slots() {
+		error_log('ajax_do_sycle_get_open_slots()');
+
+/*
+todo
+if no date is parsed, generate todays date
+
+    [action] => sycle_get_open_slots
+    [_ajax_nonce] => 02777ef5af
+    [sycle_aptname] => Hearing Aid Evaluation
+    [sycle_apttype] => 2803-1
+    [sycle_clinic_id] => 2803-9506
+    [sycle_booking_token] => 1f59e97d1e389970c6be2c2fb2f518
+    [sycle_aptlength] => 90
+    [sycle_selectedDate] => 2017-06-29
+
+*/
+//		error_log('post '.print_r($_POST,true));
+
+    $parseddata = array();
+
+    if (isset($_POST['sycle_booking_token'])) {
+    	$parseddata['token'] = sanitize_text_field($_POST['sycle_booking_token']);
+    }
+
+    if (isset($_POST['sycle_clinic_id'])) {
+    	$parseddata['clinic_id'] = sanitize_text_field($_POST['sycle_clinic_id']);
+  	}
+
+    if (isset($_POST['sycle_selectedDate'])) {
+    	$parseddata['start_date'] = sanitize_text_field($_POST['sycle_selectedDate']);
+  	}
+
+    if (isset($_POST['sycle_selectedDate'])) {
+    	$parseddata['end_date'] = sanitize_text_field($_POST['sycle_selectedDate']);
+  	}
+
+    if (isset($_POST['sycle_aptlength'])) {
+    	$parseddata['length'] = sanitize_text_field($_POST['sycle_aptlength']);
+  	}
+
+/*
 
 
-	function ajax_do_sycle_log_lookup() {
-		error_log('ajax_do_sycle_log_lookup()');
-		echo "1";
-		die();
-	}
 
 
-	function return_search_clinics_results($searchdata) {
-		if (!$searchdata) return;
-		do_action('sycle_send_request', 'return_search_clinics_results', $searchdata);
+
+length
+
+appt_reason
+appt_type
+*/
+    error_log('parseddata '.print_r($parseddata,true));
+
+    $lookupresult = $this->return_clinic_open_slots($parseddata);
+
+    error_log('lookupresult '.print_r($lookupresult,true));
+
+
+//    $this->return_clinic_open_slots($parseddata);
+
+		//$sycle_subdomain = $thesettings['sycle_subdomain'];
+
+    echo "0";
+    die();
+  }
+
+  function ajax_do_sycle_log_lookup() {
+  	error_log('ajax_do_sycle_log_lookup()');
+  	echo "1";
+  	die();
+  }
+
+
+
+  function return_clinic_open_slots($searchdata) {
+  	error_log('Debug return_clinic_open_slots() running');
+  	if (!$searchdata) return;
+  	$connectstring = json_encode($searchdata);
+  	$ch = curl_init();
+  	curl_setopt($ch, CURLOPT_URL, $this->get_api_url('open_slots'));
+  	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+  	curl_setopt($ch, CURLOPT_POSTFIELDS, $connectstring);
+  	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
+  	$headers = array();
+  	$headers[] = "Content-Type: application/x-www-form-urlencoded";
+  	curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+  	$result = curl_exec($ch);
+  	if (curl_errno($ch)) {
+  		$this->log('Error '.curl_error($ch));
+  	}
+  	curl_close ($ch);
+  	return $result;
+  }
+
+
+
+
+
+  function return_search_clinics_results($searchdata) {
+  	if (!$searchdata) return;
+  	do_action('sycle_send_request', 'return_search_clinics_results', $searchdata);
 //add_action('sycle_send_request', 'do_sycle_send_request', 10, 2);
 
-		$connectstring = json_encode($searchdata);
-		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, $this->get_api_url('clinics'));
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($ch, CURLOPT_POSTFIELDS, $connectstring);
-		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
-		$headers = array();
-		$headers[] = "Content-Type: application/x-www-form-urlencoded";
-		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-		$result = curl_exec($ch);
-		if (curl_errno($ch)) {
-			$this->log('Error '.curl_error($ch));
-		}
-		curl_close ($ch);
-		return $result;
-	}
+  	$connectstring = json_encode($searchdata);
+  	$ch = curl_init();
+  	curl_setopt($ch, CURLOPT_URL, $this->get_api_url('clinics'));
+  	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+  	curl_setopt($ch, CURLOPT_POSTFIELDS, $connectstring);
+  	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
+  	$headers = array();
+  	$headers[] = "Content-Type: application/x-www-form-urlencoded";
+  	curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+  	$result = curl_exec($ch);
+  	if (curl_errno($ch)) {
+  		$this->log('Error '.curl_error($ch));
+  	}
+  	curl_close ($ch);
+  	return $result;
+  }
 
 
 
 
 	// Returns ajax with a search
-	function ajax_do_sycle_get_search_results() {
+  function ajax_do_sycle_get_search_results() {
 	// TODO validate token
-		$request = array();
+  	$request = array();
 
 		//$addressfield = sanitize_text_field( $_POST['addressfield'] );
 // todo merge addressfield
@@ -287,10 +389,10 @@ function return_clinic_markup($locdetails,$parsedtoken) {
 
 	$output .= '<select class="sycle_apttype" name="sycle_apttype">';
 	foreach ($locdetails->appointment_types as $appointment_type) {
-		if (!$firsttypename) {
+		if (!isset($firsttypename)) {
 			$firsttypename = $appointment_type->name;
 		}
-		if (!$firsttypelength) {
+		if (!isset($firsttypelength)) {
 			$firsttypelength = $appointment_type->length;
 		}
 
@@ -368,7 +470,7 @@ function shortcode_sycle() {
 // FUNCTION RETURNS the booking form
 function shortcode_syclebooking($atts = []) {
 	$output = '<div class="sycleapi">';
-	error_log('post '.print_r($_POST,true));
+	error_log('shortcode_syclebooking() '.print_r($_POST,true));
 
 	/*
 [27-Jun-2017 20:56:36 UTC] post Array

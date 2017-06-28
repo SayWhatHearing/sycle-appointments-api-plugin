@@ -27,7 +27,6 @@ http://jqueryvalidation.org/documentation/
 	$('.sycleapi').on('change','.sycle-booking .sycle_booking_date',function(event){
 		var dateTypeVar = $(this).datepicker('getDate'); // returns date object
 		var selectedDate = $.datepicker.formatDate('yy-mm-dd', dateTypeVar);
-
 		var sycle_aptlength 			= $(this).parents().find("[name='sycle_aptlength']").val();
 		var sycle_booking_token 	= $(this).parents().find("[name='sycle_booking_token']").val();
 		var sycle_clinic_id 			= $(this).parents().find("[name='sycle_clinic_id']").val();
@@ -40,7 +39,7 @@ http://jqueryvalidation.org/documentation/
 			type : 'post',
 			data : {
 				action : 'sycle_get_open_slots',
-				_ajax_nonce: sycle_ajax_object.sycle_nonce
+				_ajax_nonce: sycle_ajax_object.sycle_nonce,
 				sycle_aptname : sycle_aptname,
 				sycle_apttype : sycle_apttype,
 				sycle_clinic_id : sycle_clinic_id,
@@ -78,14 +77,17 @@ http://jqueryvalidation.org/documentation/
 			$( ".sycle-booking" ).validate();
 
 			// Triggers the change event on selecting a new date, but only if a -different- date has been chosen
+			var Today = new Date();
 			$(".sycle-booking .sycle_booking_date").datepicker({
-				minDate: new Date(),
+				minDate: Today,
+				defaultDate: Today,
 				onSelect: function(d,i){
 					if(d !== i.lastVal){
 						$(this).change();
 					}
 				}
 			});
+$(".sycle-booking .sycle_booking_date").datepicker('setDate', Today);
 
 // todo - set up an event to track changes to datetime
 /*
