@@ -23,6 +23,13 @@ http://jqueryvalidation.org/documentation/
 		$(event.target).parent().find('.sycle_aptlength').val(length);
 	});
 
+
+
+
+
+
+
+	// ***** BOOOKING FORM *****
 	// Using .on() since this was added to DOM after load
 	$('.sycleapi').on('change','.sycle-booking .sycle_booking_date',function(event){
 		var dateTypeVar = $(this).datepicker('getDate'); // returns date object
@@ -33,6 +40,7 @@ http://jqueryvalidation.org/documentation/
 		var sycle_apttype			 		= $(this).parents().find("[name='sycle_apttype']").val();
 		var sycle_aptname					= $(this).parents().find("[name='sycle_aptname']").val();
 
+		$('.sycle_timeresults').fadeOut()
 
 		jQuery.ajax({
 			url : sycle_ajax_object.ajax_url,
@@ -48,10 +56,8 @@ http://jqueryvalidation.org/documentation/
 				sycle_selectedDate : selectedDate
 			},
 			success : function( response ) {
-				var clinics = $.parseJSON(response);
-				$.each( clinics.clinic_details, function( key, clinic ) {
-					$(element).find('.clinicslist').append('<li>'+clinic+'</li>').hide().fadeIn(350);
-				});
+				var parsed = $.parseJSON(response);
+				$('.sycle_timeresults').fadeOut().html(parsed).fadeIn();
 			},
 			error: function(error){
 						console.log("Error:"); // todo remove in prod
@@ -87,64 +93,14 @@ http://jqueryvalidation.org/documentation/
 					}
 				}
 			});
-$(".sycle-booking .sycle_booking_date").datepicker('setDate', Today);
+			// set the current date
+			$(".sycle-booking .sycle_booking_date").datepicker('setDate', Today);
 
-// todo - set up an event to track changes to datetime
-/*
-
-
-/*
-********* THESE VALUES NEEDS TO BE PARSED FOR THE /api/vendor/open_slots
-token - parsed
-clinic_id -parsed
-start_date -todo
-end_date - todo
-length  - todo ? - how to get ?
-appt_reason - todo, not required
-appt_type - todo, not required
-
-
-data : {
-						action : 'sycle_get_clinics_list',
-						_ajax_nonce: sycle_ajax_object.sycle_nonce,
-						start_date : SelectedDate,
-						clinic_id : clinic_id,
-						end_date : SelectedDate, // todo - +1 perhaps?
-						appt_reason : appt_reason,
-						appt_type: appt_type
-					},
-
-
-					*/
-
-			/*
-			$( ".sycle-booking" ).each( function( index, element ){
-				jQuery.ajax({
-					url : sycle_ajax_object.ajax_url,
-					type : 'post',
-					data : {
-						action : 'sycle_get_clinics_list',
-						_ajax_nonce: sycle_ajax_object.sycle_nonce
-					},
-					success : function( response ) {
-						var clinics = $.parseJSON(response);
-						$.each( clinics.clinic_details, function( key, clinic ) {
-							$(element).find('.clinicslist').append('<li>'+clinic+'</li>').hide().fadeIn(350);
-						});
-					},
-					error: function(error){
-						console.log("Error:"); // todo remove in prod
-						console.log(error); // todo remove in prod
-					}
-				}); // end ajax
-			}); // end foreach
-			*/
-
+			// fake the change event to get the first list of time slots
+			$(".sycle-booking .sycle_booking_date").trigger("change");
 
 		} // Hasownproperty
 	} // if( jQuery('.sycleclinicslist').length )
-
-
 
 
 

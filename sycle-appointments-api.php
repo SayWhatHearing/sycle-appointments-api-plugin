@@ -9,7 +9,7 @@
  * Requires at least: 4.23.0
  * Tested up to: 4.7.5
  *
- * Text Domain: sycleapi
+ * Text Domain: sycle-appointments
  * Domain Path: /languages/
  *
  * @package Sycle_Appointments
@@ -124,7 +124,7 @@ final class Sycle_Appointments {
 
 	function ajax_do_sycle_get_open_slots() {
 		error_log('ajax_do_sycle_get_open_slots()');
-
+		// todo - check nonce
 /*
 todo
 if no date is parsed, generate todays date
@@ -174,18 +174,83 @@ length
 appt_reason
 appt_type
 */
-error_log('parseddata '.print_r($parseddata,true));
 
+$this->timerstart('lookup_open_slots');
 $lookupresult = $this->return_clinic_open_slots($parseddata);
+$lookup_open_slots = $this->timerstop('lookup_open_slots');
 
-error_log('lookupresult '.print_r($lookupresult,true));
+error_log('ajax_do_sycle_get_open_slots took '.$lookup_open_slots.'s');
+$this->log('ajax_do_sycle_get_open_slots took '.$lookup_open_slots.'s');
 
+	$decoded = json_decode($lookupresult);
+//error_log('decoded '.print_r($decoded,true));
+/*
+
+[28-Jun-2017 17:33:34 UTC] decoded stdClass Object
+(
+    [open_slots] => Array
+        (
+            [0] => stdClass Object
+                (
+                    [staff] => stdClass Object
+                        (
+                            [staff_id] => 2803-1
+                            [first_name] => Jason
+                            [last_name] => Wilson
+                            [title] => Mr.
+                            [suffix] =>
+                            [phone1] => 6
+                        )
+
+                    [clinic] => stdClass Object
+                        (
+                            [clinic_id] => 2803-9506
+                            [name] => AMG Test Parentco
+                            [address] => stdClass Object
+                                (
+                                    [street1] => 1901 Floyd St.
+                                    [city] => FL
+                                    [state] => 34239
+                                    [country] => USA
+                                    [zip] =>
+                                )
+
+                            [phone1] => 7865634010
+                            [phone2] =>
+                            [collision_limit] => 1
+                        )
+
+                    [slots] => Array
+                        (
+                            [0] => stdClass Object
+                                (
+                                    [date] => 2017-06-29
+                                    [time] => 08:00:00
+                                    [length] => 90
+*/
+//error_log('decoded '.print_r($decoded,true));
+$output = '';
+if (is_object($decoded)) {
+	$output .= '<ul class="sycle_open_slots">';
+	foreach ($decoded->open_slots as $open_slot) {
+		//error_log('open_slot '.print_r($open_slot,true));
+		foreach ($open_slot->slots as $slot) {
+		//	error_log(print_r($slot,true));
+
+			$output .= '<li>'.$slot->time.'</li>';
+		}
+
+	}
+
+	$output .= '</ul><!-- .sycle_open_slots -->';
+}
+
+	//error_log('output '.print_r($output,true));
 
 //    $this->return_clinic_open_slots($parseddata);
 
 		//$sycle_subdomain = $thesettings['sycle_subdomain'];
-
-echo "0";
+echo json_encode($output);
 die();
 }
 
@@ -462,7 +527,7 @@ function shortcode_sycle() {
 	$formtemplate = '<div class="sycleapi"><div class="syclelookupresults"><ul class="clinicslist"></ul></div><!-- .syclelookupresults -->
 	<form class="syclefindcloseclinic"><div id="locationField">
 	<input id="sycletoken" value="'.Sycle_Appointments()->get_token().'" type="hidden">
-	<input id="sycleautocomplete" placeholder="'.__('Enter your address or ZIP code','sycleapi').'" type="text" class="sycleautocomplete"></input>
+	<input id="sycleautocomplete" placeholder="'.__('Enter your address or ZIP code','sycle-appointments').'" type="text" class="sycleautocomplete"></input>
 	</div></form></div><!-- .sycleapi -->';
 	return $formtemplate;
 }
@@ -533,7 +598,7 @@ function shortcode_syclebooking($atts = []) {
 
 		// Error for admins - perhaps add something for regular visitors?
   	if (user_can( $current_user, 'administrator' )) {
-  		$output .= '<div class="sycleerror">'.__('[syclebooking] Shortcode needs id="" paramater.','sycleapi').'</div><!-- .sycleerror -->';
+  		$output .= '<div class="sycleerror">'.__('[syclebooking] Shortcode needs id="" paramater.','sycle-appointments').'</div><!-- .sycleerror -->';
   	}
   	else {
 		// Here we can add to $output for errors for non-admins
@@ -542,9 +607,11 @@ function shortcode_syclebooking($atts = []) {
   }
 
     if (isset($sycle_clinic_id)) {
-    	$output .= '<h3>'.__('Book an appointment','sycleapi').'</h3>';
-    	$output .= 'At ...todo</br>'; // TODO
-    	$output .= '<form action="" class="sycle-booking sycle-clinic-'.esc_attr($sycle_clinic_id).'" method="POST" enctype="multipart/form-data" >';
+    	$output .= '<h3>'.__('Book an appointment','sycle-appointments').'</h3>';
+
+    	$output .= 'At ...todo</br>'; // TODO LOOK UP DETAILS VIA API?
+
+    	$output .= '<div class="booking_details">';
 
     	if (isset($sycle_token)) {
     		$output .= '<input type="hidden" name="sycle_booking_token" value="'.esc_attr($sycle_token).'">';
@@ -560,11 +627,17 @@ function shortcode_syclebooking($atts = []) {
 
     	if (isset($sycle_aptname)) {
     		$output .= '<input type="hidden" name="sycle_aptname" value="'.esc_attr($sycle_aptname).'">';
+    		$output .= '<h4>'.esc_attr($sycle_aptname).'</h4>';
     	}
 
     	if (isset($sycle_aptlength)) {
     		$output .= '<input type="hidden" name="sycle_aptlength" value="'.esc_attr($sycle_aptlength).'">';
     	}
+    	$output .='</div><!-- .booking_details -->';
+
+
+    	$output .= '<form action="" class="sycle-booking sycle-clinic-'.esc_attr($sycle_clinic_id).'" method="POST" enctype="multipart/form-data" >';
+
 
 
 /*
@@ -581,10 +654,7 @@ function shortcode_syclebooking($atts = []) {
     <input type="text" name="sycle_booking_date" class="sycle_booking_date" required/>
     </fieldset>
     <fieldset>
-			### this will be loaded with available times from the clinic ###
-    <label for="sycle_booking_time">Time</label>
-    <input type="text" name="sycle_booking_time" class="sycle_booking_time" required/>
-
+    <div class="sycle_timeresults">'.__('Choose a date to see available times','sycle-appointments').'</div><!-- .sycle_timeresults -->
     </fieldset>
     <fieldset>
     <label for="sycle_customer_title">Your Title</label>
