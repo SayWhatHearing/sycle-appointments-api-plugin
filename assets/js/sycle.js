@@ -1,14 +1,12 @@
 /*global sycle_ajax_object:true*/
 jQuery(document).ready(function($) {
 /*
-REFS:
+REFERENCES:
 http://jqueryvalidation.org/documentation/
 
+https://developers.google.com/maps/documentation/javascript/examples/places-autocomplete-addressform
+
 */
-	console.log('[Sycle] JS loaded'); // todo remove in prod
-
-
-
 
 	/*
 	This is to update two hidden fields in the form of each clinic listing. This is to parse two values, based what appointment type the customer is selecting. Two values are pased from the select data- attributes and the hidden input fields are updated.
@@ -31,9 +29,12 @@ http://jqueryvalidation.org/documentation/
 
 
 
+
+
+
 	// ***** BOOOKING FORM *****
 	// Using .on() since this was added to DOM after load
-	$('.sycleapi').on('change','.sycle-booking .sycle_booking_date',function(event){
+	$('.sycleapi').on('change','.sycle-booking .sycle_booking_date',function(){
 		var dateTypeVar = $(this).datepicker('getDate'); // returns date object
 		var selectedDate = $.datepicker.formatDate('yy-mm-dd', dateTypeVar);
 		var sycle_aptlength 			= $(this).parents().find("[name='sycle_aptlength']").val();
@@ -61,10 +62,10 @@ http://jqueryvalidation.org/documentation/
 				var parsed = $.parseJSON(response);
 				$('.sycle_timeresults').hide().removeClass('loader').html(parsed).show();
 			},
-			error: function(error){
-						console.log("Error:"); // todo remove in prod
-						console.log(error); // todo remove in prod
-					}
+			// error: function(error){
+			// 			console.log("Error:"); // todo remove in prod
+			// 			console.log(error); // todo remove in prod
+			// 		}
 				}); // end ajax
 
 	});
@@ -76,20 +77,24 @@ http://jqueryvalidation.org/documentation/
 
 	*/
 
-// TODO:
 
-	// Detects the [syclebooking] shortcode outputs
+
+
+
+
+
+	// Detects the [syclebooking] shortcode output
 	if( jQuery('.sycle-booking').length ) {
 		if ( (sycle_ajax_object.hasOwnProperty("sycle_nonce")) || (sycle_ajax_object.hasOwnProperty("ajax_url")) ) {
 
 			$( ".sycle-booking" ).validate({
 
-    rules: {
-        sycle_booking_date: {
-            required: true
-        }
-    }
-});
+				rules: {
+					sycle_booking_date: {
+						required: true
+					}
+				}
+			});
 
 			// Triggers the change event on selecting a new date, but only if a -different- date has been chosen
 			var Today = new Date();
@@ -113,6 +118,15 @@ http://jqueryvalidation.org/documentation/
 
 
 
+
+
+
+
+
+
+
+
+
 	// Detects the [sycleclinicslist] shortcode output, reads nonce and gets back a list of clinics
 	if( jQuery('.sycleclinicslist').length ) {
 		if ( (sycle_ajax_object.hasOwnProperty("sycle_nonce")) || (sycle_ajax_object.hasOwnProperty("ajax_url")) ) {
@@ -130,14 +144,22 @@ http://jqueryvalidation.org/documentation/
 							$(element).find('.clinicslist').append('<li>'+clinic+'</li>').hide().fadeIn(350);
 						});
 					},
-					error: function(error){
-						console.log("Error:"); // todo remove in prod
-						console.log(error); // todo remove in prod
-					}
+					// error: function(error){
+					// 	console.log("Error:"); // todo remove in prod
+					// 	console.log(error); // todo remove in prod
+					// }
 				}); // end ajax
 			}); // end foreach
 		} // Hasownproperty
 	} // if( jQuery('.sycleclinicslist').length )
+
+
+
+
+
+
+
+
 
 
 	// Detects the [sycle] autocomplete
@@ -151,16 +173,10 @@ http://jqueryvalidation.org/documentation/
 				/** @type {!HTMLInputElement} */(document.getElementById('sycleautocomplete')),
 				{types: ['geocode']});
 
-
-			//autocomplete.addListener('place_changed', fillInAddress);
 			autocomplete.addListener('place_changed', function() {
-				// var data = $("#search_form").serialize();
 				var place = autocomplete.getPlace();
 				var place_components = autocomplete.getPlace().address_components;
-
 				var response = {};
-
-
 				var streetAddr = [addrComponents.streetNumber, addrComponents.streetName, addrComponents.zipCode, addrComponents.stateName];
 				var streetAddrDisplay = [];
 
@@ -188,30 +204,18 @@ http://jqueryvalidation.org/documentation/
 							$(e.target).closest('.sycleapi').find('.clinicslist').append('<li class="clinic">'+clinic+'</li>').hide().fadeIn(350);
 						});
 					},
-					error: function(error){
-					console.log("Error:"); // todo remove in prod
-					console.log(error); // todo remove in prod
-				}
+				// 	error: function(error){
+				// 	console.log("Error:"); // todo remove in prod
+				// 	console.log(error); // todo remove in prod
+				// }
 			}); // end ajax
 
-
-
-
-				//return false;
 			}); // place_changed
-
-
-			 // geolocate();
-
-			//var addressfield = $(".syclefindcloseclinic .sycleautocomplete").val();
-
 
 		});
 	} // if the location autocomplete is shown.
 
 
-
-		// REF: https://developers.google.com/maps/documentation/javascript/examples/places-autocomplete-addressform
 		var placeSearch, autocomplete;
 		var componentForm = {
 			street_number: 'short_name',
@@ -245,34 +249,6 @@ http://jqueryvalidation.org/documentation/
 				type: 'postal_code'
 			}
 		};
-
-
-
-
-
-		function fillInAddress() {
-			// LARS - TODO - find better solution, instead of storing in html objects - perhaps hidden input fields?
-
-			// Get the place details from the autocomplete object.
-			var place = autocomplete.getPlace();
-
-			// for (var component in componentForm) {
-			// 	document.getElementById(component).value = '';
-			// 	document.getElementById(component).disabled = false;
-			// }
-
-			// Get each component of the address from the place details
-			// and fill the corresponding field on the form.
-			for (var i = 0; i < place.address_components.length; i++) {
-				var addressType = place.address_components[i].types[0];
-				if (componentForm[addressType]) {
-					var val = place.address_components[i][componentForm[addressType]];
-					console.log(addressType+' '+val);
-					//console.log(this);
-					document.getElementById(addressType).value = val;
-				}
-			}
-		}
 
 			// Bias the autocomplete object to the user's geographical location,
 			// as supplied by the browser's 'navigator.geolocation' object.

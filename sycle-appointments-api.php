@@ -91,16 +91,9 @@ final class Sycle_Appointments {
 		add_action('wp_ajax_sycle_log_lookup', array(&$this, 'ajax_do_sycle_log_lookup'));
 		add_action('wp_ajax_nopriv_sycle_log_lookup', array(&$this, 'ajax_do_sycle_log_lookup'));
 
-
-
-
-
 		// Ajax for logging lookups and searches
 		add_action('wp_ajax_sycle_get_open_slots', array(&$this, 'ajax_do_sycle_get_open_slots'));
 		add_action('wp_ajax_nopriv_sycle_get_open_slots', array(&$this, 'ajax_do_sycle_get_open_slots'));
-
-
-
 
 	} // End __construct()
 
@@ -123,223 +116,171 @@ final class Sycle_Appointments {
 
 
 	function ajax_do_sycle_get_open_slots() {
-		error_log('ajax_do_sycle_get_open_slots()');
 		// todo - check nonce
-/*
-todo
-if no date is parsed, generate todays date
 
-    [action] => sycle_get_open_slots
-    [_ajax_nonce] => 02777ef5af
-    [sycle_aptname] => Hearing Aid Evaluation
-    [sycle_apttype] => 2803-1
-    [sycle_clinic_id] => 2803-9506
-    [sycle_booking_token] => 1f59e97d1e389970c6be2c2fb2f518
-    [sycle_aptlength] => 90
-    [sycle_selectedDate] => 2017-06-29
+		$parseddata = array();
 
-*/
-//		error_log('post '.print_r($_POST,true));
-
-    $parseddata = array();
-
-    if (isset($_POST['sycle_booking_token'])) {
-    	$parseddata['token'] = sanitize_text_field($_POST['sycle_booking_token']);
-    }
-
-    // fallback way to get token if not parsed
-    if (!isset($parseddata['token'])) {
-    	$parseddata['token'] = $this->get_token();
-    }
-
-    if (isset($_POST['sycle_clinic_id'])) {
-    	$parseddata['clinic_id'] = sanitize_text_field($_POST['sycle_clinic_id']);
-    }
-
-    if (isset($_POST['sycle_selectedDate'])) {
-    	$parseddata['start_date'] = sanitize_text_field($_POST['sycle_selectedDate']);
-    }
-
-    if (isset($_POST['sycle_selectedDate'])) {
-    	$parseddata['end_date'] = sanitize_text_field($_POST['sycle_selectedDate']);
-    }
-
-    if (isset($_POST['sycle_aptlength'])) {
-    	$parseddata['length'] = sanitize_text_field($_POST['sycle_aptlength']);
-    }
-
-/*
-
-
-
-
-
-length
-
-appt_reason
-appt_type
-*/
-
-$this->timerstart('lookup_open_slots');
-$lookupresult = $this->return_clinic_open_slots($parseddata);
-$lookup_open_slots = $this->timerstop('lookup_open_slots');
-
-error_log('ajax_do_sycle_get_open_slots took '.$lookup_open_slots.'s');
-$this->log('ajax_do_sycle_get_open_slots took '.$lookup_open_slots.'s');
-
-$decoded = json_decode($lookupresult);
-//error_log('decoded '.print_r($decoded,true));
-
-$output = '';
-
-if (is_object($decoded)) {
-	error_log('decoded '.print_r($decoded,true));
-
-	foreach ($decoded->open_slots as $open_slot) {
-		$output .= '<div class="sycle_open_slots_container">';
-			$output .= '<div class="sycle_open_slots_meta">Staff: '; // todo
-			$output .= $open_slot->staff->title.' '.$open_slot->staff->first_name.' '.$open_slot->staff->last_name;
-			$output .= '</div>';
-			$output .= '<ul class="sycle_open_slots">';
-		//error_log('open_slot '.print_r($open_slot,true));
-			foreach ($open_slot->slots as $slot) {
-		//	error_log(print_r($slot,true));
-
-				$output .= '<li>';
-				$output .= '<label><input type="radio" name="sycle_booking_time" required/>
-				'.$slot->time.'</label>';
-				$output .= '</li>';
-			}
-			$output .= '</ul><!-- .sycle_open_slots -->';
-			$output .= '</div><!-- .sycle_open_slots_container -->';
-
+		if (isset($_POST['sycle_booking_token'])) {
+			$parseddata['token'] = sanitize_text_field($_POST['sycle_booking_token']);
 		}
 
-	}
+    // fallback way to get token if not parsed
+		if (!isset($parseddata['token'])) {
+			$parseddata['token'] = $this->get_token();
+		}
 
-	//error_log('output '.print_r($output,true));
+		if (isset($_POST['sycle_clinic_id'])) {
+			$parseddata['clinic_id'] = sanitize_text_field($_POST['sycle_clinic_id']);
+		}
 
-//    $this->return_clinic_open_slots($parseddata);
+		if (isset($_POST['sycle_selectedDate'])) {
+			$parseddata['start_date'] = sanitize_text_field($_POST['sycle_selectedDate']);
+		}
 
-		//$sycle_subdomain = $thesettings['sycle_subdomain'];
-	echo json_encode($output);
-	die();
-}
+		if (isset($_POST['sycle_selectedDate'])) {
+			$parseddata['end_date'] = sanitize_text_field($_POST['sycle_selectedDate']);
+		}
 
-function ajax_do_sycle_log_lookup() {
-	error_log('ajax_do_sycle_log_lookup() - nothing happens.. todo');
-	echo "1";
-	die();
-}
+		if (isset($_POST['sycle_aptlength'])) {
+			$parseddata['length'] = sanitize_text_field($_POST['sycle_aptlength']);
+		}
+
+		$this->timerstart('lookup_open_slots');
+		$lookupresult = $this->return_clinic_open_slots($parseddata);
+		$lookup_open_slots = $this->timerstop('lookup_open_slots');
+
+		error_log('ajax_do_sycle_get_open_slots took '.$lookup_open_slots.'s');
+		$this->log('ajax_do_sycle_get_open_slots took '.$lookup_open_slots.'s');
+
+		$decoded = json_decode($lookupresult);
+
+		$output = '';
+
+		if (is_object($decoded)) {
+			foreach ($decoded->open_slots as $open_slot) {
+				$output .= '<div class="sycle_open_slots_container">';
+					$output .= '<div class="sycle_open_slots_meta">Staff: '; // todo
+					$output .= $open_slot->staff->title.' '.$open_slot->staff->first_name.' '.$open_slot->staff->last_name;
+					$output .= '</div>';
+					$output .= '<ul class="sycle_open_slots">';
+					foreach ($open_slot->slots as $slot) {
+						$output .= '<li>';
+						$output .= '<label><input type="radio" name="sycle_booking_time" required/>
+						'.$slot->time.'</label>';
+						$output .= '</li>';
+					}
+					$output .= '</ul><!-- .sycle_open_slots -->';
+					$output .= '</div><!-- .sycle_open_slots_container -->';
+				}
+			}
+			echo json_encode($output);
+			die();
+		} // ajax_do_sycle_get_open_slots
 
 
 
-function return_clinic_open_slots($searchdata) {
-	error_log('Debug return_clinic_open_slots() running');
-	if (!$searchdata) return;
-	$connectstring = json_encode($searchdata);
-	$ch = curl_init();
-	curl_setopt($ch, CURLOPT_URL, $this->get_api_url('open_slots'));
-	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-	curl_setopt($ch, CURLOPT_POSTFIELDS, $connectstring);
-	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
-	$headers = array();
-	$headers[] = "Content-Type: application/x-www-form-urlencoded";
-	curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-	$result = curl_exec($ch);
-	if (curl_errno($ch)) {
-		$this->log('Error '.curl_error($ch));
-	}
-	curl_close ($ch);
-	return $result;
-}
+
+		function ajax_do_sycle_log_lookup() {
+			error_log('ajax_do_sycle_log_lookup() - nothing happens.. todo');
+			echo "1";
+			die();
+		}
+
+
+
+		function return_clinic_open_slots($searchdata) {
+			if (!$searchdata) return;
+			$connectstring = json_encode($searchdata);
+			$ch = curl_init();
+			curl_setopt($ch, CURLOPT_URL, $this->get_api_url('open_slots'));
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+			curl_setopt($ch, CURLOPT_POSTFIELDS, $connectstring);
+			curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
+			$headers = array();
+			$headers[] = "Content-Type: application/x-www-form-urlencoded";
+			curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+			$result = curl_exec($ch);
+			if (curl_errno($ch)) {
+				$this->log('Error '.curl_error($ch));
+			}
+			curl_close ($ch);
+			return $result;
+		}
 
 
 
 
 
-function return_search_clinics_results($searchdata) {
-	if (!$searchdata) return;
-	do_action('sycle_send_request', 'return_search_clinics_results', $searchdata);
-//add_action('sycle_send_request', 'do_sycle_send_request', 10, 2);
+		function return_search_clinics_results($searchdata) {
+			if (!$searchdata) return;
+			// TODO - make better - perhaps create a function to retun uniform data?
+			do_action('sycle_send_request', 'return_search_clinics_results', $searchdata);
 
-	$connectstring = json_encode($searchdata);
-	$ch = curl_init();
-	curl_setopt($ch, CURLOPT_URL, $this->get_api_url('clinics'));
-	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-	curl_setopt($ch, CURLOPT_POSTFIELDS, $connectstring);
-	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
-	$headers = array();
-	$headers[] = "Content-Type: application/x-www-form-urlencoded";
-	curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-	$result = curl_exec($ch);
-	if (curl_errno($ch)) {
-		$this->log('Error '.curl_error($ch));
-	}
-	curl_close ($ch);
-	return $result;
-}
+			$connectstring = json_encode($searchdata);
+			$ch = curl_init();
+			curl_setopt($ch, CURLOPT_URL, $this->get_api_url('clinics'));
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+			curl_setopt($ch, CURLOPT_POSTFIELDS, $connectstring);
+			curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
+			$headers = array();
+			$headers[] = "Content-Type: application/x-www-form-urlencoded";
+			curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+			$result = curl_exec($ch);
+			if (curl_errno($ch)) {
+				$this->log('Error '.curl_error($ch));
+			}
+			curl_close ($ch);
+			return $result;
+		}
 
 
 
 
 	// Returns ajax with a search
-function ajax_do_sycle_get_search_results() {
-	// TODO validate token
-	$request = array();
+		function ajax_do_sycle_get_search_results() {
+			// TODO validate token
+			$request = array();
 
-		//$addressfield = sanitize_text_field( $_POST['addressfield'] );
-// todo merge addressfield
+			// Setting defaults
+			$proximity = array(); // todo look for and parse any locale data
+			$proximity['zip'] = '34239'; // todo debug required
+			$proximity['miles'] = '100'; // todo debug 	1-1000 required
 
-		//error_log('ajax_do_sycle_get_search_results() '.print_r($_POST,true));
-
-		// Setting defaults
-		$proximity = array(); // todo look for and parse any locale data
-		$proximity['zip'] = '34239'; // todo debug required
-		$proximity['miles'] = '100'; // todo debug 	1-1000 required
-
-		if (is_array($_POST['addressfield'])) {
-			foreach ($_POST['addressfield'] as $adrfield) {
-				if ($adrfield['types'][0]=='street_number') {
-					$proximity['street1'] = $adrfield['short_name'];
-				}
-				if ($adrfield['types'][0]=='route') {
-					$proximity['street1'] .= ' '.$adrfield['short_name'];
-				}
-				if ($adrfield['types'][0]=='postal_code') {
-					$proximity['zip'] = $adrfield['short_name'];
-				}
-				if ($adrfield['types'][0]=='administrative_area_level_2') {
-					$proximity['city'] = $adrfield['short_name'];
-				}
-				if ($adrfield['types'][0]=='administrative_area_level_1') {
-					$proximity['state'] = $adrfield['short_name'];
+			if (is_array($_POST['addressfield'])) {
+				foreach ($_POST['addressfield'] as $adrfield) {
+					if ($adrfield['types'][0]=='street_number') {
+						$proximity['street1'] = $adrfield['short_name'];
+					}
+					if ($adrfield['types'][0]=='route') {
+						$proximity['street1'] .= ' '.$adrfield['short_name'];
+					}
+					if ($adrfield['types'][0]=='postal_code') {
+						$proximity['zip'] = $adrfield['short_name'];
+					}
+					if ($adrfield['types'][0]=='administrative_area_level_2') {
+						$proximity['city'] = $adrfield['short_name'];
+					}
+					if ($adrfield['types'][0]=='administrative_area_level_1') {
+						$proximity['state'] = $adrfield['short_name'];
+					}
 				}
 			}
-		}
-		error_log(print_r($proximity,true));
-		error_log(print_r($_POST,true));
-		error_log(print_r(json_decode($_POST['addressfield']),true));
+			$request['token'] = $this->get_token();
+			$request['proximity'] = $proximity;
 
-		$request['token'] = $this->get_token();
-		$request['proximity'] = $proximity;
+			$result = $this->return_search_clinics_results($request);
 
-		$result = $this->return_search_clinics_results($request);
+			$clinics_list = json_decode($result);
 
-		$clinics_list = json_decode($result);
-
-		$output = array();
-		if (is_array($clinics_list->clinic_details)) {
-			foreach ($clinics_list->clinic_details as $clinic) {
-				$output['clinic_details'][] = $this->return_clinic_markup($clinic,$request['token'] );
+			$output = array();
+			if (is_array($clinics_list->clinic_details)) {
+				foreach ($clinics_list->clinic_details as $clinic) {
+					$output['clinic_details'][] = $this->return_clinic_markup($clinic,$request['token'] );
+				}
 			}
+			echo json_encode($output);
+			die();
 		}
-		echo json_encode($output);
-
-		die();
-	}
-
-
 
 
 // Returns endpoint url for API - appends endpoint if added
@@ -351,7 +292,8 @@ function ajax_do_sycle_get_search_results() {
 		return $finalurl;
 	}
 
-	// Gets a token from the Sycle API
+
+	// Returns a token from the Sycle API
 	function get_token() {
 		$thesettings = Sycle_Appointments()->settings->get_settings();
 		$connectstring= '{"username":"'.esc_attr($thesettings['sycle_username']).'", "password":"'.esc_attr($thesettings['sycle_pw']).'"}';
@@ -459,14 +401,13 @@ function ajax_do_sycle_get_search_results() {
 
 
 
-
+	// Returns details for a specific clinic, id and token mandatory.
 	function return_clinic_details($clinic_id,$token) {
 		if (!$token) return 'token missing';
 		if (!$clinic_id) return 'clinic_id missing';
 		$connectstring= '{"token":"'.esc_attr($token).'"}';
 		$ch = curl_init();
 		$api_url = $this->get_api_url('clinics').$clinic_id.'/';
-		error_log('return_clinic_details() '.$api_url);
 		curl_setopt($ch, CURLOPT_URL, $api_url);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($ch, CURLOPT_POSTFIELDS, $connectstring);
@@ -530,7 +471,6 @@ function ajax_do_sycle_get_search_results() {
 	function shortcode_syclebooking($atts = []) {
 		$atts = array_change_key_case((array)$atts, CASE_LOWER);
 		$output = '<div class="sycleapi">';
-	//	error_log('shortcode_syclebooking() '.print_r($_POST,true));
 
 
 		if (isset($_POST['sycle_apttype'])) {
@@ -552,26 +492,19 @@ function ajax_do_sycle_get_search_results() {
 			$sycle_token = $this->get_token();
 		}
 
-
-
 		if (isset($_POST['sycle_token'])) {
 			$sycle_token = sanitize_text_field($_POST['sycle_token']);
 		}
-
-
-
 
 		// Lets see if the shortcode has the id paramater
 		if (isset($atts['id'])) {
 			$sycle_clinic_id = sanitize_text_field($atts['id']);
 		}
-
 		// If not, lets see if it is parsed via POST
 		if ( (!isset($sycle_clinic_id)) && (isset($_POST['sycle_clinic_id'])) ) {
 			$sycle_clinic_id = sanitize_text_field($_POST['sycle_clinic_id']);
 		}
-
-		// Final chance, looking up via post meta.
+		// Final chance, looking up via post meta!
 		if (!isset($sycle_clinic_id)) {
 			global $post;
 			$meta = get_post_meta($post->ID, 'sycle_clinic_id', true);
@@ -591,45 +524,31 @@ function ajax_do_sycle_get_search_results() {
 		}
 
 		if (isset($sycle_clinic_id)) {
-
-
-
-
 			$output .= '<h3>'.__('Book an appointment','sycle-appointments').'</h3>';
-
     	$output .= 'At ...todo</br>'; // TODO LOOK UP DETAILS VIA API?
-
     	$output .= '<div class="booking_details">';
-    	// TODOD
+    	// TODO
 
     	$output .='</div><!-- .booking_details -->';
-
-
     	$output .= '<form action="" class="sycle-booking sycle-clinic-'.esc_attr($sycle_clinic_id).'" method="POST" enctype="multipart/form-data" >';
 
+		// TODO - SET UP WITH A TRANSIENT TO SPEED UP - shouldnt update too often?
+    	$reasons = json_decode( $this->return_clinic_details($sycle_clinic_id,$sycle_token) );
+    	if (isset($reasons->clinic_details->appointment_types)) {
+    		$output .= '<fieldset>';
+    		$output .= '<select class="sycle_apttype" name="sycle_apttype">';
+    		foreach ($reasons->clinic_details->appointment_types as $at) {
+    			if (!isset($sycle_apttype)) $sycle_apttype = $at->appt_type_id;
+    			if (!isset($sycle_aptname)) $sycle_aptname = $at->name;
+    			if (!isset($sycle_aptlength)) $sycle_aptlength = $at->length;
 
-
-// SSSSSSs
-
-		// TODO - SET UP WITH A TRANSIENT TO SPEED UP
-    		$reasons = json_decode( $this->return_clinic_details($sycle_clinic_id,$sycle_token) );
-    		if (isset($reasons->clinic_details->appointment_types)) {
-    			$output .= '<fieldset>';
-    			$output .= '<select class="sycle_apttype" name="sycle_apttype">';
-
-    			foreach ($reasons->clinic_details->appointment_types as $at) {
-    				if (!isset($sycle_apttype)) $sycle_apttype = $at->appt_type_id;
-    				if (!isset($sycle_aptname)) $sycle_aptname = $at->name;
-    				if (!isset($sycle_aptlength)) $sycle_aptlength = $at->length;
-
-    				$output .= '<option value="'.esc_attr($at->appt_type_id).'" data-name="'.esc_attr($at->name).'"data-type="'.esc_attr($at->appt_type_id).'" data-length="'.esc_attr($at->length).'"';
-    				if ( $at->appt_type_id == $sycle_apttype ) $output .= ' selected="selected"';
-    				$output .='>'.esc_attr($at->name).'</option>';
-    			}
-    			$output .= '</select>';
-    			$output .= '</fieldset>';
+    			$output .= '<option value="'.esc_attr($at->appt_type_id).'" data-name="'.esc_attr($at->name).'"data-type="'.esc_attr($at->appt_type_id).'" data-length="'.esc_attr($at->length).'"';
+    			if ( $at->appt_type_id == $sycle_apttype ) $output .= ' selected="selected"';
+    			$output .='>'.esc_attr($at->name).'</option>';
     		}
-
+    		$output .= '</select>';
+    		$output .= '</fieldset>';
+    	}
 
     	if (isset($sycle_token)) {
     		$output .= '<input type="hidden" name="sycle_booking_token" value="'.esc_attr($sycle_token).'">';
@@ -651,61 +570,43 @@ function ajax_do_sycle_get_search_results() {
     		$output .= '<input type="hidden" name="sycle_aptlength" value="'.esc_attr($sycle_aptlength).'">';
     	}
 
+			$output .= '<fieldset>
+			<label for="sycle_booking_date">Choose date</label>
+			<input type="text" name="sycle_booking_date" class="sycle_booking_date" required/>
+			</fieldset>
+			<fieldset>
+			<label>Choose time</label>
+			<div class="sycle_timeresults">'.__('Choose a date to see available times','sycle-appointments').'</div><!-- .sycle_timeresults -->
+			</fieldset>
+			<fieldset>
+			<label for="sycle_customer_title">Your Title</label>
+			<select class="required" name="sycle_customer_title" class="sycle_customer_title">
+			<option value="" selected="selected">- Select -</option>
+			<option value="Mr">Mr</option>
+			<option value="Mrs">Mrs</option>
+			<option value="Miss">Miss</option>
+			<option value="Ms">Ms</option>
+			<option value="Dr">Dr</option>
+			</select>
+			</fieldset>
+			<fieldset>
+			<label for="sycle_customer_name">Your Name</label>
+			<input type="text" name="sycle_customer_name" class="sycle_customer_name" required/>
+			</fieldset>
+			<fieldset>
+			<label for="sycle_customer_email">Your Email</label>
+			<input type="text" name="sycle_customer_email" class="sycle_customer_email email" required/>
+			</fieldset>
 
-	/*
-	$output .= '<select class="sycle_apttype" name="sycle_apttype">';
-	foreach ($locdetails->appointment_types as $appointment_type) {
-		if (!isset($firsttypename)) {
-			$firsttypename = $appointment_type->name;
+			<fieldset>
+			<button type="submit" name="sycle-submit" class="sycle-booking-submit">Send Query</button>
+			</fieldset>'.wp_nonce_field( 'submit_contact_form' , 'nonce_field_for_submit_contact_form');
+			$output .= '<input type="text" class="datepicker" name="sycle_datepicker" value=""/>';
+			$output .= '</form>';
 		}
-		if (!isset($firsttypelength)) {
-			$firsttypelength = $appointment_type->length;
-		}
-
-		$output .= '<option value="'.esc_attr($appointment_type->appt_type_id).'" data-name="'.esc_attr($appointment_type->name).'"data-type="'.esc_attr($appointment_type->appt_type_id).'" data-length="'.esc_attr($appointment_type->length).'">'.esc_attr($appointment_type->name).'</option>';
+		$output .= '</div><!-- .sycleapi -->';
+		return $output;
 	}
-	$output .= '</select>';
-	*/
-
-// todo - look up what apt. types available for this clinic via API -
-	$output .= '<fieldset>
-	<label for="sycle_booking_date">Choose date</label>
-	<input type="text" name="sycle_booking_date" class="sycle_booking_date" required/>
-	</fieldset>
-	<fieldset>
-	<label>Choose time</label>
-	<div class="sycle_timeresults">'.__('Choose a date to see available times','sycle-appointments').'</div><!-- .sycle_timeresults -->
-	</fieldset>
-	<fieldset>
-	<label for="sycle_customer_title">Your Title</label>
-	<select class="required" name="sycle_customer_title" class="sycle_customer_title">
-	<option value="" selected="selected">- Select -</option>
-	<option value="Mr">Mr</option>
-	<option value="Mrs">Mrs</option>
-	<option value="Miss">Miss</option>
-	<option value="Ms">Ms</option>
-	<option value="Dr">Dr</option>
-	</select>
-	</fieldset>
-	<fieldset>
-	<label for="sycle_customer_name">Your Name</label>
-	<input type="text" name="sycle_customer_name" class="sycle_customer_name" required/>
-	</fieldset>
-	<fieldset>
-	<label for="sycle_customer_email">Your Email</label>
-	<input type="text" name="sycle_customer_email" class="sycle_customer_email email" required/>
-	</fieldset>
-
-	<fieldset>
-	<button type="submit" name="sycle-submit" class="sycle-booking-submit">Send Query</button>
-	</fieldset>'.wp_nonce_field( 'submit_contact_form' , 'nonce_field_for_submit_contact_form');
-	$output .= '<input type="text" class="datepicker" name="sycle_datepicker" value=""/>';
-	$output .= '</form>';
-}
-
-$output .= '</div><!-- .sycleapi -->';
-return $output;
-}
 
 
 	/**
@@ -793,8 +694,6 @@ function _scripts_styles_loader() {
 	// TODO - we can do this better - include style in plugin css perhaps?
 	// Also: https://github.com/stuttter/wp-datepicker-styling/blob/master/datepicker.css
 	wp_enqueue_style('e2b-admin-ui-css','//ajax.googleapis.com/ajax/libs/jqueryui/1.9.0/themes/base/jquery-ui.css',false,"1.9.0",false);
-
-
 }
 
 
@@ -814,11 +713,13 @@ public static function de_activation_functions () {
 	}
 }
 
-
+// Sets a transient with the $watchname and current time.
 function timerstart($watchname) {
 	set_transient('sycleapi_trans_' . sanitize_text_field($watchname), microtime(true), 60 * 60 * 1);
 }
 
+// Reads and deletes a transient with $watchname
+// Yes, transients are deleted automatically anyways (usually), but why wait? :-)
 function timerstop($watchname, $digits = 5) {
 	$return = round(microtime(true) - get_transient('sycleapi_trans_' . sanitize_text_field($watchname)), $digits);
 	delete_transient('sycleapi_trans_' . sanitize_text_field($watchname));
