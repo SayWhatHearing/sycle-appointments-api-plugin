@@ -149,19 +149,19 @@ if no date is parsed, generate todays date
 
     if (isset($_POST['sycle_clinic_id'])) {
     	$parseddata['clinic_id'] = sanitize_text_field($_POST['sycle_clinic_id']);
-  	}
+    }
 
     if (isset($_POST['sycle_selectedDate'])) {
     	$parseddata['start_date'] = sanitize_text_field($_POST['sycle_selectedDate']);
-  	}
+    }
 
     if (isset($_POST['sycle_selectedDate'])) {
     	$parseddata['end_date'] = sanitize_text_field($_POST['sycle_selectedDate']);
-  	}
+    }
 
     if (isset($_POST['sycle_aptlength'])) {
     	$parseddata['length'] = sanitize_text_field($_POST['sycle_aptlength']);
-  	}
+    }
 
 /*
 
@@ -174,82 +174,82 @@ length
 appt_reason
 appt_type
 */
-    error_log('parseddata '.print_r($parseddata,true));
+error_log('parseddata '.print_r($parseddata,true));
 
-    $lookupresult = $this->return_clinic_open_slots($parseddata);
+$lookupresult = $this->return_clinic_open_slots($parseddata);
 
-    error_log('lookupresult '.print_r($lookupresult,true));
+error_log('lookupresult '.print_r($lookupresult,true));
 
 
 //    $this->return_clinic_open_slots($parseddata);
 
 		//$sycle_subdomain = $thesettings['sycle_subdomain'];
 
-    echo "0";
-    die();
-  }
+echo "0";
+die();
+}
 
-  function ajax_do_sycle_log_lookup() {
-  	error_log('ajax_do_sycle_log_lookup()');
-  	echo "1";
-  	die();
-  }
-
-
-
-  function return_clinic_open_slots($searchdata) {
-  	error_log('Debug return_clinic_open_slots() running');
-  	if (!$searchdata) return;
-  	$connectstring = json_encode($searchdata);
-  	$ch = curl_init();
-  	curl_setopt($ch, CURLOPT_URL, $this->get_api_url('open_slots'));
-  	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-  	curl_setopt($ch, CURLOPT_POSTFIELDS, $connectstring);
-  	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
-  	$headers = array();
-  	$headers[] = "Content-Type: application/x-www-form-urlencoded";
-  	curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-  	$result = curl_exec($ch);
-  	if (curl_errno($ch)) {
-  		$this->log('Error '.curl_error($ch));
-  	}
-  	curl_close ($ch);
-  	return $result;
-  }
+function ajax_do_sycle_log_lookup() {
+	error_log('ajax_do_sycle_log_lookup()');
+	echo "1";
+	die();
+}
 
 
 
+function return_clinic_open_slots($searchdata) {
+	error_log('Debug return_clinic_open_slots() running');
+	if (!$searchdata) return;
+	$connectstring = json_encode($searchdata);
+	$ch = curl_init();
+	curl_setopt($ch, CURLOPT_URL, $this->get_api_url('open_slots'));
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+	curl_setopt($ch, CURLOPT_POSTFIELDS, $connectstring);
+	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
+	$headers = array();
+	$headers[] = "Content-Type: application/x-www-form-urlencoded";
+	curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+	$result = curl_exec($ch);
+	if (curl_errno($ch)) {
+		$this->log('Error '.curl_error($ch));
+	}
+	curl_close ($ch);
+	return $result;
+}
 
 
-  function return_search_clinics_results($searchdata) {
-  	if (!$searchdata) return;
-  	do_action('sycle_send_request', 'return_search_clinics_results', $searchdata);
+
+
+
+function return_search_clinics_results($searchdata) {
+	if (!$searchdata) return;
+	do_action('sycle_send_request', 'return_search_clinics_results', $searchdata);
 //add_action('sycle_send_request', 'do_sycle_send_request', 10, 2);
 
-  	$connectstring = json_encode($searchdata);
-  	$ch = curl_init();
-  	curl_setopt($ch, CURLOPT_URL, $this->get_api_url('clinics'));
-  	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-  	curl_setopt($ch, CURLOPT_POSTFIELDS, $connectstring);
-  	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
-  	$headers = array();
-  	$headers[] = "Content-Type: application/x-www-form-urlencoded";
-  	curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-  	$result = curl_exec($ch);
-  	if (curl_errno($ch)) {
-  		$this->log('Error '.curl_error($ch));
-  	}
-  	curl_close ($ch);
-  	return $result;
-  }
+	$connectstring = json_encode($searchdata);
+	$ch = curl_init();
+	curl_setopt($ch, CURLOPT_URL, $this->get_api_url('clinics'));
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+	curl_setopt($ch, CURLOPT_POSTFIELDS, $connectstring);
+	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
+	$headers = array();
+	$headers[] = "Content-Type: application/x-www-form-urlencoded";
+	curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+	$result = curl_exec($ch);
+	if (curl_errno($ch)) {
+		$this->log('Error '.curl_error($ch));
+	}
+	curl_close ($ch);
+	return $result;
+}
 
 
 
 
 	// Returns ajax with a search
-  function ajax_do_sycle_get_search_results() {
+function ajax_do_sycle_get_search_results() {
 	// TODO validate token
-  	$request = array();
+	$request = array();
 
 		//$addressfield = sanitize_text_field( $_POST['addressfield'] );
 // todo merge addressfield
@@ -508,50 +508,42 @@ function shortcode_syclebooking($atts = []) {
     }
 
 
-
-
-
-
     $atts = array_change_key_case((array)$atts, CASE_LOWER);
-// TODO - options "showmeta", ...
-	// Lets see if the shortcode has the id paramater
+
+		// Lets see if the shortcode has the id paramater
     if (isset($atts['id'])) {
     	$sycle_clinic_id = sanitize_text_field($atts['id']);
     }
 
-	// If not, lets see if it is parsed via POST
+		// If not, lets see if it is parsed via POST
     if ( (!isset($sycle_clinic_id)) && (isset($_POST['sycle_clinic_id'])) ) {
     	$sycle_clinic_id = sanitize_text_field($_POST['sycle_clinic_id']);
     }
 
-	// Final chance, looking up via post meta.
+		// Final chance, looking up via post meta.
     if (!isset($sycle_clinic_id)) {
     	global $post;
     	$meta = get_post_meta($post->ID, 'sycle_clinic_id', true);
     	if ($meta) $sycle_clinic_id = $meta;
     }
 
-	// Output errors for admins.
+		// Output errors for admins.
     if (!isset($sycle_clinic_id)) {
-
     	$current_user = wp_get_current_user();
 
 		// Error for admins - perhaps add something for regular visitors?
-    	if (user_can( $current_user, 'administrator' )) {
-    		$output .= '<div class="sycleerror">'.__('[syclebooking] Shortcode needs id="" paramater.','sycleapi').'</div><!-- .sycleerror -->';
-    	}
-    	else {
-			// Here we can add to $output for errors for non-admins
-    	}
-    	return $output;
-    }
+  	if (user_can( $current_user, 'administrator' )) {
+  		$output .= '<div class="sycleerror">'.__('[syclebooking] Shortcode needs id="" paramater.','sycleapi').'</div><!-- .sycleerror -->';
+  	}
+  	else {
+		// Here we can add to $output for errors for non-admins
+  	}
+  	return $output;
+  }
 
     if (isset($sycle_clinic_id)) {
-	//	$output .= '<div id="datepicker">test</div>';
-
     	$output .= '<h3>'.__('Book an appointment','sycleapi').'</h3>';
-    	$output .= 'At ...todo</br>';
-
+    	$output .= 'At ...todo</br>'; // TODO
     	$output .= '<form action="" class="sycle-booking sycle-clinic-'.esc_attr($sycle_clinic_id).'" method="POST" enctype="multipart/form-data" >';
 
     	if (isset($sycle_token)) {
@@ -733,8 +725,15 @@ public static function de_activation_functions () {
 }
 
 
+function timerstart($watchname) {
+	set_transient('sycleapi_trans_' . sanitize_text_field($watchname), microtime(true), 60 * 60 * 1);
+}
 
-
+function timerstop($watchname, $digits = 5) {
+	$return = round(microtime(true) - get_transient('sycleapi_trans_' . sanitize_text_field($watchname)), $digits);
+	delete_transient('sycleapi_trans_' . sanitize_text_field($watchname));
+	return $return;
+}
 
 
 public static function activation_functions () {
