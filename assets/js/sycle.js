@@ -13,17 +13,24 @@ http://jqueryvalidation.org/documentation/
 	/*
 	This is to update two hidden fields in the form of each clinic listing. This is to parse two values, based what appointment type the customer is selecting. Two values are pased from the select data- attributes and the hidden input fields are updated.
 
-	This reduces further
+	This reduces further calls to API by copying data from attributes embedded in the <select> this code changes the values of hidden input fields
 	*/
 	$('.sycleapi').on('change','.sycle_apttype',function(event){
 		var optionSelected = $("option:selected", this);
-		//var type = optionSelected.attr('data-type');
 		var length = optionSelected.attr('data-length');
 		var name = optionSelected.attr('data-name');
 		$(event.target).parent().find('.sycle_aptname').val(name);
 		$(event.target).parent().find('.sycle_aptlength').val(length);
 	});
 
+	// Using .on() since this was added to DOM after load
+	$('.sycleapi').on('change','.sycle-booking .sycle_booking_date',function(event){
+			var selecteddate = $(this).datepicker( "getDate" );
+			// todo - this does not work properly.
+		// 	console.log(selecteddate);
+		// console.log($(this).datepicker( "getDate" ));
+
+	});
 	/*
 	Lars - really would have liked to get this to work - Maybe Michael knows?
 	Gist of it, apparently using $.ajax() you cannot send a body in the request when doing GET - so with GET, the data is parsed as parameters, which Sycle ignores.
@@ -34,47 +41,22 @@ http://jqueryvalidation.org/documentation/
 
 // TODO:
 
-/*
-
-{
-		rules: {
-			sycle_customer_name: {
-				required: true
-			},
-			sycle_customer_email: {
-				required: true,
-				email: true
-			},
-			sycle_customer_name: {
-				required: true
-			}
-		}
-	}
-	*/
-
-
-
 	// Detects the [syclebooking] shortcode outputs
 	if( jQuery('.sycle-booking').length ) {
 		if ( (sycle_ajax_object.hasOwnProperty("sycle_nonce")) || (sycle_ajax_object.hasOwnProperty("ajax_url")) ) {
 
 			$( ".sycle-booking" ).validate();
 			$(".sycle-booking .sycle_booking_date").datepicker({
-				altFormat: "yyyy-mm-dd"
+				altFormat: "yyyy-mm-dd",
+				onSelect: function(d,i){
+					if(d !== i.lastVal){
+						$(this).change();
+					}
+				}
 			});
 
 // todo - set up an event to track changes to datetime
 /*
-
-$( ".selector" ).datepicker( "setDate", "10/12/2012" );
-*/
-
-
-/*
-
-$("#myname").find(':selected').attr('isred');
-
-*/
 
 
 /*
