@@ -25,10 +25,40 @@ http://jqueryvalidation.org/documentation/
 
 	// Using .on() since this was added to DOM after load
 	$('.sycleapi').on('change','.sycle-booking .sycle_booking_date',function(event){
-			var selecteddate = $(this).datepicker( "getDate" );
-			// todo - this does not work properly.
-		// 	console.log(selecteddate);
-		// console.log($(this).datepicker( "getDate" ));
+		var dateTypeVar = $(this).datepicker('getDate'); // returns date object
+		var selectedDate = $.datepicker.formatDate('yy-mm-dd', dateTypeVar);
+
+		var sycle_aptlength 			= $(this).parents().find("[name='sycle_aptlength']").val();
+		var sycle_booking_token 	= $(this).parents().find("[name='sycle_booking_token']").val();
+		var sycle_clinic_id 			= $(this).parents().find("[name='sycle_clinic_id']").val();
+		var sycle_apttype			 		= $(this).parents().find("[name='sycle_apttype']").val();
+		var sycle_aptname					= $(this).parents().find("[name='sycle_aptname']").val();
+
+
+		jQuery.ajax({
+			url : sycle_ajax_object.ajax_url,
+			type : 'post',
+			data : {
+				action : 'sycle_get_open_slots',
+				_ajax_nonce: sycle_ajax_object.sycle_nonce
+				sycle_aptname : sycle_aptname,
+				sycle_apttype : sycle_apttype,
+				sycle_clinic_id : sycle_clinic_id,
+				sycle_booking_token : sycle_booking_token,
+				sycle_aptlength : sycle_aptlength,
+				sycle_selectedDate : selectedDate
+			},
+			success : function( response ) {
+				var clinics = $.parseJSON(response);
+				$.each( clinics.clinic_details, function( key, clinic ) {
+					$(element).find('.clinicslist').append('<li>'+clinic+'</li>').hide().fadeIn(350);
+				});
+			},
+			error: function(error){
+						console.log("Error:"); // todo remove in prod
+						console.log(error); // todo remove in prod
+					}
+				}); // end ajax
 
 	});
 	/*
@@ -46,8 +76,10 @@ http://jqueryvalidation.org/documentation/
 		if ( (sycle_ajax_object.hasOwnProperty("sycle_nonce")) || (sycle_ajax_object.hasOwnProperty("ajax_url")) ) {
 
 			$( ".sycle-booking" ).validate();
+
+			// Triggers the change event on selecting a new date, but only if a -different- date has been chosen
 			$(".sycle-booking .sycle_booking_date").datepicker({
-				altFormat: "yyyy-mm-dd",
+				minDate: new Date(),
 				onSelect: function(d,i){
 					if(d !== i.lastVal){
 						$(this).change();
@@ -69,7 +101,19 @@ length  - todo ? - how to get ?
 appt_reason - todo, not required
 appt_type - todo, not required
 
-*/
+
+data : {
+						action : 'sycle_get_clinics_list',
+						_ajax_nonce: sycle_ajax_object.sycle_nonce,
+						start_date : SelectedDate,
+						clinic_id : clinic_id,
+						end_date : SelectedDate, // todo - +1 perhaps?
+						appt_reason : appt_reason,
+						appt_type: appt_type
+					},
+
+
+					*/
 
 			/*
 			$( ".sycle-booking" ).each( function( index, element ){

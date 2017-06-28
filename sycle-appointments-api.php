@@ -285,13 +285,10 @@ function return_clinic_markup($locdetails,$parsedtoken) {
 	$output .= '<form method="post" action="'.$actionurl.'">';
 	$output .= '<input type="hidden" name="sycle_clinic_id" value="'.$locdetails->clinic->clinic_id.'">';
 
-
-
-
 	$output .= '<select class="sycle_apttype" name="sycle_apttype">';
 	foreach ($locdetails->appointment_types as $appointment_type) {
 		if (!$firsttypename) {
-			$firsttypename = $appointment_type->appt_type_id;
+			$firsttypename = $appointment_type->name;
 		}
 		if (!$firsttypelength) {
 			$firsttypelength = $appointment_type->length;
@@ -375,105 +372,155 @@ function shortcode_syclebooking($atts = []) {
 
 	/*
 [27-Jun-2017 20:56:36 UTC] post Array
-(
-    [sycle_clinic_id] => 2803-9506
-    [sycle_token] => 8ae2a37752752ab40871e5fae8170b
-    [sycle_apttype] => 2803-1
-    [submit] => Book Time
-)
 
+    [sycle_clinic_id] => 2803-9506
+    [sycle_apttype] => 2803-1
+    [sycle_token] => c668dd7fdf0d96ed0db92aa09a7b83
+    [sycle_aptname] => 2803-1
+    [sycle_aptlength] => 90
+    [submit] => Book Time
 
 	*/
 
-if (isset($_POST['sycle_token'])) {
-	$sycle_token = sanitize_text_field($_POST['sycle_token']);
-}
 
-$atts = array_change_key_case((array)$atts, CASE_LOWER);
+
+
+    if (isset($_POST['sycle_clinic_id'])) {
+    	$sycle_clinic_id = sanitize_text_field($_POST['sycle_clinic_id']);
+    }
+
+    if (isset($_POST['sycle_apttype'])) {
+    	$sycle_apttype = sanitize_text_field($_POST['sycle_apttype']);
+    }
+
+    if (isset($_POST['sycle_aptname'])) {
+    	$sycle_aptname = sanitize_text_field($_POST['sycle_aptname']);
+    }
+
+    if (isset($_POST['sycle_aptlength'])) {
+    	$sycle_aptlength = sanitize_text_field($_POST['sycle_aptlength']);
+    }
+
+    if (isset($_POST['sycle_token'])) {
+    	$sycle_token = sanitize_text_field($_POST['sycle_token']);
+    }
+
+
+
+
+
+
+    $atts = array_change_key_case((array)$atts, CASE_LOWER);
 // TODO - options "showmeta", ...
 	// Lets see if the shortcode has the id paramater
-if (isset($atts['id'])) {
-	$sycle_clinic_id = sanitize_text_field($atts['id']);
-}
+    if (isset($atts['id'])) {
+    	$sycle_clinic_id = sanitize_text_field($atts['id']);
+    }
 
 	// If not, lets see if it is parsed via POST
-if ( (!isset($sycle_clinic_id)) && (isset($_POST['sycle_clinic_id'])) ) {
-	$sycle_clinic_id = sanitize_text_field($_POST['sycle_clinic_id']);
-}
+    if ( (!isset($sycle_clinic_id)) && (isset($_POST['sycle_clinic_id'])) ) {
+    	$sycle_clinic_id = sanitize_text_field($_POST['sycle_clinic_id']);
+    }
 
 	// Final chance, looking up via post meta.
-if (!isset($sycle_clinic_id)) {
-	global $post;
-	$meta = get_post_meta($post->ID, 'sycle_clinic_id', true);
-	if ($meta) $sycle_clinic_id = $meta;
-}
+    if (!isset($sycle_clinic_id)) {
+    	global $post;
+    	$meta = get_post_meta($post->ID, 'sycle_clinic_id', true);
+    	if ($meta) $sycle_clinic_id = $meta;
+    }
 
 	// Output errors for admins.
-if (!isset($sycle_clinic_id)) {
+    if (!isset($sycle_clinic_id)) {
 
-	$current_user = wp_get_current_user();
+    	$current_user = wp_get_current_user();
 
 		// Error for admins - perhaps add something for regular visitors?
-	if (user_can( $current_user, 'administrator' )) {
-		$output .= '<div class="sycleerror">'.__('[syclebooking] Shortcode needs id="" paramater.','sycleapi').'</div><!-- .sycleerror -->';
-	}
-	else {
+    	if (user_can( $current_user, 'administrator' )) {
+    		$output .= '<div class="sycleerror">'.__('[syclebooking] Shortcode needs id="" paramater.','sycleapi').'</div><!-- .sycleerror -->';
+    	}
+    	else {
 			// Here we can add to $output for errors for non-admins
-	}
-	return $output;
-}
+    	}
+    	return $output;
+    }
 
-if (isset($sycle_clinic_id)) {
+    if (isset($sycle_clinic_id)) {
 	//	$output .= '<div id="datepicker">test</div>';
 
-	$output .= '<h3>'.__('Book an appointment','sycleapi').'</h3>';
-	$output .= 'At ...todo</br>';
+    	$output .= '<h3>'.__('Book an appointment','sycleapi').'</h3>';
+    	$output .= 'At ...todo</br>';
 
-	$output .= '<form action="" class="sycle-booking sycle-clinic-'.esc_attr($sycle_clinic_id).'" method="POST" enctype="multipart/form-data" >';
+    	$output .= '<form action="" class="sycle-booking sycle-clinic-'.esc_attr($sycle_clinic_id).'" method="POST" enctype="multipart/form-data" >';
 
-	if (isset($sycle_token)) {
-		$output .= '<input type="hidden" name="sycle_booking_token" value="'.esc_attr($sycle_token).'">';
-	}
+    	if (isset($sycle_token)) {
+    		$output .= '<input type="hidden" name="sycle_booking_token" value="'.esc_attr($sycle_token).'">';
+    	}
+
+    	if (isset($sycle_clinic_id)) {
+    		$output .= '<input type="hidden" name="sycle_clinic_id" value="'.esc_attr($sycle_clinic_id).'">';
+    	}
+
+    	if (isset($sycle_apttype)) {
+    		$output .= '<input type="hidden" name="sycle_apttype" value="'.esc_attr($sycle_apttype).'">';
+    	}
+
+    	if (isset($sycle_aptname)) {
+    		$output .= '<input type="hidden" name="sycle_aptname" value="'.esc_attr($sycle_aptname).'">';
+    	}
+
+    	if (isset($sycle_aptlength)) {
+    		$output .= '<input type="hidden" name="sycle_aptlength" value="'.esc_attr($sycle_aptlength).'">';
+    	}
+
+
+/*
+    [sycle_clinic_id] => 2803-9506
+    [sycle_apttype] => 2803-1
+
+    [sycle_aptname] => 2803-1
+    [sycle_aptlength] => 90
+*/
+
 // todo - look up what apt. types available for this clinic via API -
-	$output .= '<fieldset>
-	<label for="sycle_booking_date">Choose date</label>
-	<input type="text" name="sycle_booking_date" class="sycle_booking_date" required/>
-	</fieldset>
-	<fieldset>
+    $output .= '<fieldset>
+    <label for="sycle_booking_date">Choose date</label>
+    <input type="text" name="sycle_booking_date" class="sycle_booking_date" required/>
+    </fieldset>
+    <fieldset>
 			### this will be loaded with available times from the clinic ###
-	<label for="sycle_booking_time">Time</label>
-	<input type="text" name="sycle_booking_time" class="sycle_booking_time" required/>
+    <label for="sycle_booking_time">Time</label>
+    <input type="text" name="sycle_booking_time" class="sycle_booking_time" required/>
 
-	</fieldset>
-	<fieldset>
-	<label for="sycle_customer_title">Your Title</label>
-	<select class="required" name="sycle_customer_title" class="sycle_customer_title">
-	<option value="" selected="selected">- Select -</option>
-	<option value="Mr">Mr</option>
-	<option value="Mrs">Mrs</option>
-	<option value="Miss">Miss</option>
-	<option value="Ms">Ms</option>
-	<option value="Dr">Dr</option>
-	</select>
-	</fieldset>
-	<fieldset>
-	<label for="sycle_customer_name">Your Name</label>
-	<input type="text" name="sycle_customer_name" class="sycle_customer_name" required/>
-	</fieldset>
-	<fieldset>
-	<label for="sycle_customer_email">Your Email</label>
-	<input type="text" name="sycle_customer_email" class="sycle_customer_email email" required/>
-	</fieldset>
+    </fieldset>
+    <fieldset>
+    <label for="sycle_customer_title">Your Title</label>
+    <select class="required" name="sycle_customer_title" class="sycle_customer_title">
+    <option value="" selected="selected">- Select -</option>
+    <option value="Mr">Mr</option>
+    <option value="Mrs">Mrs</option>
+    <option value="Miss">Miss</option>
+    <option value="Ms">Ms</option>
+    <option value="Dr">Dr</option>
+    </select>
+    </fieldset>
+    <fieldset>
+    <label for="sycle_customer_name">Your Name</label>
+    <input type="text" name="sycle_customer_name" class="sycle_customer_name" required/>
+    </fieldset>
+    <fieldset>
+    <label for="sycle_customer_email">Your Email</label>
+    <input type="text" name="sycle_customer_email" class="sycle_customer_email email" required/>
+    </fieldset>
 
-	<fieldset>
-	<button type="submit" name="sycle-submit" class="sycle-booking-submit">Send Query</button>
-	</fieldset>'.wp_nonce_field( 'submit_contact_form' , 'nonce_field_for_submit_contact_form');
-	$output .= '<input type="text" class="datepicker" name="sycle_datepicker" value=""/>';
-	$output .= '</form>';
-}
+    <fieldset>
+    <button type="submit" name="sycle-submit" class="sycle-booking-submit">Send Query</button>
+    </fieldset>'.wp_nonce_field( 'submit_contact_form' , 'nonce_field_for_submit_contact_form');
+    $output .= '<input type="text" class="datepicker" name="sycle_datepicker" value=""/>';
+    $output .= '</form>';
+  }
 
-$output .= '</div><!-- .sycleapi -->';
-return $output;
+  $output .= '</div><!-- .sycleapi -->';
+  return $output;
 }
 
 
