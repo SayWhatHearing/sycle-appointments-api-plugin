@@ -19,8 +19,10 @@ http://jqueryvalidation.org/documentation/
 		var optionSelected = $("option:selected", this);
 		var length = optionSelected.attr('data-length');
 		var name = optionSelected.attr('data-name');
-		$(event.target).parent().find('.sycle_aptname').val(name);
-		$(event.target).parent().find('.sycle_aptlength').val(length);
+		$(event.target).parents().find('input[name="sycle_aptname"]').val(name);
+		$(event.target).parents().find('input[name="sycle_aptlength"]').val(length);
+		$(".sycle-booking .sycle_booking_date").trigger("change");
+		// todo - detect if change
 	});
 
 
@@ -81,9 +83,9 @@ http://jqueryvalidation.org/documentation/
 		if ( (sycle_ajax_object.hasOwnProperty("sycle_nonce")) || (sycle_ajax_object.hasOwnProperty("ajax_url")) ) {
 
 			$( ".sycle-booking" ).validate({
-    // other options,
+
     rules: {
-        sycle_booking_date: { // <- NAME of every radio in the same group
+        sycle_booking_date: {
             required: true
         }
     }
@@ -169,12 +171,6 @@ http://jqueryvalidation.org/documentation/
 						}
 					});
 				});
-
-				//var addressfield = streetAddrDisplay.join(' ');
-
-				// show_submit_data(data);
-
-
 
 				jQuery.ajax({
 					url : sycle_ajax_object.ajax_url,
