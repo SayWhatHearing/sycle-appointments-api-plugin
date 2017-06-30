@@ -29,11 +29,82 @@ https://developers.google.com/maps/documentation/javascript/examples/places-auto
 
 
 
+	// ***** SUBMITTING BOOKING FORM *****
+
+	$('.sycle-booking-submit').on('click',function(event){
+		event.preventDefault();
+		// $(this).val('Submitting, please wait');
+
+		var dateTypeVar = $(this).parents().find('.sycle_booking_date').datepicker('getDate');
+		var selectedDate = $.datepicker.formatDate('yy-mm-dd', dateTypeVar);
+
+
+var selectedTime = $(this).parents().find("input[name='sycle_booking_time']:checked").val();
+console.log('selectedTime '+selectedTime);
+
+
+		var sycle_aptname					= $(this).parents().find("[name='sycle_aptname']").val();
+		var sycle_aptlength 			= $(this).parents().find("[name='sycle_aptlength']").val();
+		var sycle_booking_token 	= $(this).parents().find("[name='sycle_booking_token']").val();
+		var sycle_clinic_id 			= $(this).parents().find("[name='sycle_clinic_id']").val();
+		var sycle_apttype			 		= $(this).parents().find("[name='sycle_apttype']").val();
+		var sycle_aptname					= $(this).parents().find("[name='sycle_aptname']").val();
+
+		var sycle_customer_title					= $(this).parents().find("[name='sycle_customer_title']").val();
+		var sycle_customer_first_name 			= $(this).parents().find("[name='sycle_customer_first_name']").val();
+		var sycle_customer_last_name			 		= $(this).parents().find("[name='sycle_customer_last_name']").val();
+		var sycle_customer_phone					= $(this).parents().find("[name='sycle_customer_phone']").val();
+		var sycle_customer_email					= $(this).parents().find("[name='sycle_customer_email']").val();
+
+
+
+/*
+		$connectstring = '{"token": "'.$connectdetails->token.'","start": "'.$connectdetails->start.'","clinic_id": "'.$connectdetails->clinic_id.'","appt_type_id": "'.$connectdetails->appt_type_id.'","ref_source_id": "'.$connectdetails->ref_source_id.'","ref_source_name": "'.$connectdetails->ref_source_name.'","sub_ref_name": "'.$connectdetails->sub_ref_name.'","patient": {"first_name": "'.$connectdetails->first_name.'","last_name": "'.$connectdetails->last_name.'","phone": "'.$connectdetails->phone.'","email": "'.$connectdetails->email.'"}}';
+*/
+
+		jQuery.ajax({
+			url : sycle_ajax_object.ajax_url,
+			type : 'post',
+			data : {
+				action : 'sycle_make_appointment',
+				_ajax_nonce : sycle_ajax_object.sycle_nonce,
+				sycle_startday : selectedDate,
+				sycle_starttime : selectedTime,
+				sycle_appt_type_id : sycle_apttype,
+				sycle_clinic_id : sycle_clinic_id,
+				sycle_token : sycle_booking_token,
+				sycle_first_name : sycle_customer_first_name,
+				sycle_last_name : sycle_customer_last_name,
+				sycle_phone : sycle_customer_phone,
+				sycle_email : sycle_customer_email,
+				sycle_ref_source_name : 'ref_source_name', // TODO
+				sycle_sub_ref_name : 'sub_ref_name' // TODO
+			},
+			success : function( response ) {
+				console.log('success submitting?');
+				console.log(response);
+console.log('------');
+			},
+			error: function(error){
+						console.log("Error:"); // todo remove in prod
+						console.log(error); // todo remove in prod
+					}
+				}); // end ajax
+		// todo - detect if change
+	});
 
 
 
 
-	// ***** BOOOKING FORM *****
+
+
+
+
+
+
+
+
+	// ***** BOOOKING FORM CHANGING DATE *****
 	// Using .on() since this was added to DOM after load
 	$('.sycleapi').on('change','.sycle-booking .sycle_booking_date',function(){
 		var dateTypeVar = $(this).datepicker('getDate'); // returns date object

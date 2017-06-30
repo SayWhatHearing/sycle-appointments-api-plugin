@@ -86,7 +86,6 @@ final class Sycle_Appointments {
 		add_action('wp_ajax_sycle_get_search_results', array(&$this, 'ajax_do_sycle_get_search_results'));
 		add_action('wp_ajax_nopriv_sycle_get_search_results', array(&$this, 'ajax_do_sycle_get_search_results'));
 
-
 		// Ajax for logging lookups and searches
 		add_action('wp_ajax_sycle_log_lookup', array(&$this, 'ajax_do_sycle_log_lookup'));
 		add_action('wp_ajax_nopriv_sycle_log_lookup', array(&$this, 'ajax_do_sycle_log_lookup'));
@@ -94,6 +93,11 @@ final class Sycle_Appointments {
 		// Ajax for logging lookups and searches
 		add_action('wp_ajax_sycle_get_open_slots', array(&$this, 'ajax_do_sycle_get_open_slots'));
 		add_action('wp_ajax_nopriv_sycle_get_open_slots', array(&$this, 'ajax_do_sycle_get_open_slots'));
+
+
+		// Ajax for making appointments
+		add_action('wp_ajax_sycle_make_appointment', array(&$this, 'ajax_do_sycle_make_appointment'));
+		add_action('wp_ajax_nopriv_sycle_make_appointment', array(&$this, 'ajax_do_sycle_make_appointment'));
 
 	} // End __construct()
 
@@ -165,7 +169,7 @@ final class Sycle_Appointments {
 					$output .= '<ul class="sycle_open_slots">';
 					foreach ($open_slot->slots as $slot) {
 						$output .= '<li>';
-						$output .= '<label><input type="radio" name="sycle_booking_time" required/>
+						$output .= '<label><input type="radio" name="sycle_booking_time" value="'.$slot->time.'" required/>
 						'.$slot->time.'</label>';
 						$output .= '</li>';
 					}
@@ -420,9 +424,111 @@ final class Sycle_Appointments {
 			error_log('return_clinic_details() Error '.curl_error($ch));
 		}
 		curl_close ($ch);
+		// error_log('return_clinic_details() result '.print_r($result,true));
 		return $result;
+		/*
+		SAMPLE RESPONSE:
+		[30-Jun-2017 02:59:16 UTC] return_clinic_details() result {"clinic_details":{"clinic":{"clinic_id":"2803-9506","clinic_name":"AMG Test Parentco","address":{"street1":"1901 Floyd St.","street2":"","city":"FL","state":"34239","country":"USA","zip":null},"phone1":"7865634010","phone2":"","collision_limit":1},"appointment_types":[{"appt_type_id":"2803-1","name":"Hearing Aid Evaluation","length":90},{"appt_type_id":"2803-2","name":"Diagnostic Evaluation","length":60},{"appt_type_id":"2803-3","name":"Hearing Aid Demo","length":60},{"appt_type_id":"2803-4","name":"Fitting\/Follow Up","length":45},{"appt_type_id":"2803-5","name":"Service\/Repair","length":15},{"appt_type_id":"2803-6","name":"Clean and Check","length":15}],"referral_sources":[{"ref_source_id":"2803-6","name":"Physician Referral","referral_subcategories":[{"sub_ref_id":"2803-1","name":"ENT"},{"sub_ref_id":"2803-2","name":"M.D."},{"sub_ref_id":"2803-3","name":"Speech Pathologist"}]}]}}
+		*/
 	}
 
+	// Handles the parsing of $_POST and sends to another function a request for an appointment. Response is handled and logged.
+	function ajax_do_sycle_make_appointment() {
+		error_log('ajax_do_sycle_make_appointment() $_POST '.print_r($_POST,true));
+		$this->timerstart('ajax_do_sycle_make_appointment');
+
+		$connectdetails = array();
+		$connectdetails['token'] = sanitize_text_field($_POST['sycle_token']);
+		$connectdetails['start'] = sanitize_text_field($_POST['sycle_startday'].' '.$_POST['sycle_starttime']);
+
+		$connectdetails['appt_type_id'] = sanitize_text_field($_POST['sycle_appt_type_id']);
+		$connectdetails['clinic_id'] = sanitize_text_field($_POST['sycle_clinic_id']);
+		$connectdetails['first_name'] = sanitize_text_field($_POST['sycle_first_name']);
+		$connectdetails['last_name'] = sanitize_text_field($_POST['sycle_last_name']);
+		$connectdetails['phone'] = sanitize_text_field($_POST['sycle_phone']);
+		$connectdetails['email'] = sanitize_text_field($_POST['sycle_email']);
+		$connectdetails['ref_source_name'] = sanitize_text_field('sycle_ref_source_name');
+		$connectdetails['sub_ref_name'] = sanitize_text_field('sycle_sub_ref_name');
+
+/*
+    [action] => sycle_make_appointment
+    [_ajax_nonce] => fb4dc44edb
+    [sycle_startday] => 2017-06-29
+    [sycle_starttime] => 15:30:00
+    [sycle_appt_type_id] => 2803-1
+    [sycle_clinic_id] => 2803-9506
+    [sycle_token] => 88b30f5d68f2e0a899ee8e05ea13a0
+    [sycle_first_name] =>
+    [sycle_last_name] =>
+    [sycle_phone] =>
+    [sycle_email] =>
+    [sycle_ref_source_name] => ref_source_name
+    [sycle_sub_ref_name] => sub_ref_name
+)
+*/
+
+// TODO TEST REQUIRED VALUES ARE THERE - REF API DOCUMENTATION
+
+		$result = $this->return_appointment_request($connectdetails);
+
+error_log('Response fra apt request '.print_r($result,true).' Time '.$ajax_do_sycle_make_appointment);
+
+$ajax_do_sycle_make_appointment = $this->timerstop('ajax_do_sycle_make_appointment');
+
+/*
+[30-Jun-2017 03:06:11 UTC] ajax_do_sycle_get_open_slots took 1.41662s
+[30-Jun-2017 03:06:13 UTC] ajax_do_sycle_make_appointment() $_POST Array
+(
+    [action] => sycle_make_appointment
+    [_ajax_nonce] => fb4dc44edb
+    [sycle_startday] => 2017-06-30
+    [sycle_starttime] => 15:30:00
+    [sycle_appt_type_id] => sycle_appt_type_id
+    [sycle_clinic_id] => sycle_clinic_id
+    [sycle_token] => sycle_token
+    [sycle_first_name] => first
+    [sycle_last_name] => last
+    [sycle_phone] => phone
+    [sycle_email] => email
+    [sycle_ref_source_name] => ref_source_name
+    [sycle_sub_ref_name] => sub_ref_name
+)
+
+
+*/
+		echo "1";
+		die();
+
+	}
+
+
+
+
+	function return_appointment_request($connectdetails) {
+		if (!$connectdetails) return;
+		// todo -
+		$connectstring = '{"token": "'.$connectdetails['token'].'","start": "'.$connectdetails['start'].'","clinic_id": "'.$connectdetails['clinic_id'].'","appt_type_id": "'.$connectdetails['appt_type_id'].'","ref_source_name": "'.$connectdetails['ref_source_name'].'","sub_ref_name": "'.$connectdetails['sub_ref_name'].'","patient": {"first_name": "'.$connectdetails['first_name'].'","last_name": "'.$connectdetails['last_name'].'","phone": "'.$connectdetails['phone'].'","email": "'.$connectdetails['email'].'"}}';
+
+	//	error_log('return_appointment_request() connectstring '.print_r($connectstring,true));
+// TODO
+
+		//$connectstring= '{"token":"'.esc_attr($token).'"}';
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, $this->get_api_url('appointment'));
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $connectstring);
+		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
+		$headers = array();
+		$headers[] = "Content-Type: application/x-www-form-urlencoded";
+		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+		$result = curl_exec($ch);
+		if (curl_errno($ch)) {
+			$this->log('Error '.curl_error($ch));
+		}
+		curl_close ($ch);
+		error_log('return_appointment_request() result '.print_r($result,true));
+		return $result;
+	}
 
 
 
@@ -525,92 +631,92 @@ final class Sycle_Appointments {
 
 		if (isset($sycle_clinic_id)) {
 			$output .= '<h3>'.__('Book an appointment','sycle-appointments').'</h3>';
-    	$output .= '<div class="booking_details">';
-    	$output .='</div><!-- .booking_details -->';
-    	$output .= '<form action="" class="sycle-booking sycle-clinic-'.esc_attr($sycle_clinic_id).'" method="POST" enctype="multipart/form-data" >';
+			$output .= '<div class="booking_details">';
+			$output .='</div><!-- .booking_details -->';
+			$output .= '<form action="" class="sycle-booking sycle-clinic-'.esc_attr($sycle_clinic_id).'" method="POST" enctype="multipart/form-data" >';
 
 		// TODO - SET UP WITH A TRANSIENT TO SPEED UP - shouldnt update too often?
-    	$reasons = json_decode( $this->return_clinic_details($sycle_clinic_id,$sycle_token) );
-    	if (isset($reasons->clinic_details->appointment_types)) {
-    		$output .= '<fieldset>';
-    		$output .= '<select class="sycle_apttype" name="sycle_apttype">';
-    		foreach ($reasons->clinic_details->appointment_types as $at) {
-    			if (!isset($sycle_apttype)) $sycle_apttype = $at->appt_type_id;
-    			if (!isset($sycle_aptname)) $sycle_aptname = $at->name;
-    			if (!isset($sycle_aptlength)) $sycle_aptlength = $at->length;
+			$reasons = json_decode( $this->return_clinic_details($sycle_clinic_id,$sycle_token) );
+			if (isset($reasons->clinic_details->appointment_types)) {
+				$output .= '<fieldset>';
+				$output .= '<select class="sycle_apttype" name="sycle_apttype">';
+				foreach ($reasons->clinic_details->appointment_types as $at) {
+					if (!isset($sycle_apttype)) $sycle_apttype = $at->appt_type_id;
+					if (!isset($sycle_aptname)) $sycle_aptname = $at->name;
+					if (!isset($sycle_aptlength)) $sycle_aptlength = $at->length;
 
-    			$output .= '<option value="'.esc_attr($at->appt_type_id).'" data-name="'.esc_attr($at->name).'"data-type="'.esc_attr($at->appt_type_id).'" data-length="'.esc_attr($at->length).'"';
-    			if ( $at->appt_type_id == $sycle_apttype ) $output .= ' selected="selected"';
-    			$output .='>'.esc_attr($at->name).'</option>';
-    		}
-    		$output .= '</select>';
-    		$output .= '</fieldset>';
-    	}
+					$output .= '<option value="'.esc_attr($at->appt_type_id).'" data-name="'.esc_attr($at->name).'"data-type="'.esc_attr($at->appt_type_id).'" data-length="'.esc_attr($at->length).'"';
+					if ( $at->appt_type_id == $sycle_apttype ) $output .= ' selected="selected"';
+					$output .='>'.esc_attr($at->name).'</option>';
+				}
+				$output .= '</select>';
+				$output .= '</fieldset>';
+			}
 
-    	if (isset($sycle_token)) {
-    		$output .= '<input type="hidden" name="sycle_booking_token" value="'.esc_attr($sycle_token).'">';
-    	}
+			if (isset($sycle_token)) {
+				$output .= '<input type="hidden" name="sycle_booking_token" value="'.esc_attr($sycle_token).'">';
+			}
 
-    	if (isset($sycle_clinic_id)) {
-    		$output .= '<input type="hidden" name="sycle_clinic_id" value="'.esc_attr($sycle_clinic_id).'">';
-    	}
+			if (isset($sycle_clinic_id)) {
+				$output .= '<input type="hidden" name="sycle_clinic_id" value="'.esc_attr($sycle_clinic_id).'">';
+			}
 
-    	if (isset($sycle_apttype)) {
-    		$output .= '<input type="hidden" name="sycle_apttype" value="'.esc_attr($sycle_apttype).'">';
-    	}
+			if (isset($sycle_apttype)) {
+				$output .= '<input type="hidden" name="sycle_apttype" value="'.esc_attr($sycle_apttype).'">';
+			}
 
-    	if (isset($sycle_aptname)) {
-    		$output .= '<input type="hidden" name="sycle_aptname" value="'.esc_attr($sycle_aptname).'">';
-    	}
+			if (isset($sycle_aptname)) {
+				$output .= '<input type="hidden" name="sycle_aptname" value="'.esc_attr($sycle_aptname).'">';
+			}
 
-    	if (isset($sycle_aptlength)) {
-    		$output .= '<input type="hidden" name="sycle_aptlength" value="'.esc_attr($sycle_aptlength).'">';
-    	}
+			if (isset($sycle_aptlength)) {
+				$output .= '<input type="hidden" name="sycle_aptlength" value="'.esc_attr($sycle_aptlength).'">';
+			}
 
-    	$output .= '<fieldset>
-    	<label for="sycle_booking_date">Choose Date *</label>
-    	<input type="text" name="sycle_booking_date" class="sycle_booking_date" required/>
-    	</fieldset>
-    	<fieldset>
-    	<label>Choose Time *</label>
-    	<div class="sycle_timeresults">'.__('Choose a date to see available times','sycle-appointments').'</div><!-- .sycle_timeresults -->
-    	</fieldset>
-    	<fieldset>
-    	<label for="sycle_customer_title">Your Title *</label>
-    	<select class="required" name="sycle_customer_title" class="sycle_customer_title">
-    	<option value="" selected="selected">- Select -</option>
-    	<option value="Mr">Mr</option>
-    	<option value="Mrs">Mrs</option>
-    	<option value="Miss">Miss</option>
-    	<option value="Ms">Ms</option>
-    	<option value="Dr">Dr</option>
-    	</select>
-    	</fieldset>
-    	<fieldset>
-    	<label for="sycle_customer_first_name">Your First Name *</label>
-    	<input type="text" name="sycle_customer_first_name" class="sycle_customer_first_name" required/>
-    	</fieldset>
-    	<fieldset>
-    	<label for="sycle_customer_last_name">Your Last Name *</label>
-    	<input type="text" name="sycle_customer_last_name" class="sycle_customer_last_name" required/>
-    	</fieldset>
-    	<fieldset>
-    	<label for="sycle_customer_phone">Your Phone * </label>
-    	<input type="text" name="sycle_customer_phone" class="sycle_customer_phone" required/>
-    	</fieldset>
-    	<fieldset>
-    	<label for="sycle_customer_email">Your Email</label>
-    	<input type="text" name="sycle_customer_email" class="sycle_customer_email email"/>
-    	</fieldset>
-    	<fieldset>
-    	<button type="submit" name="sycle-submit" class="sycle-booking-submit">Send Query</button>
-    	</fieldset>'.wp_nonce_field( 'submit_contact_form' , 'nonce_field_for_submit_contact_form');
-    	$output .= '<input type="text" class="datepicker" name="sycle_datepicker" value=""/>';
-    	$output .= '</form>';
-    }
-    $output .= '</div><!-- .sycleapi -->';
-    return $output;
-  }
+			$output .= '<fieldset>
+			<label for="sycle_booking_date">Choose Date *</label>
+			<input type="text" name="sycle_booking_date" class="sycle_booking_date" required/>
+			</fieldset>
+			<fieldset>
+			<label>Choose Time *</label>
+			<div class="sycle_timeresults">'.__('Choose a date to see available times','sycle-appointments').'</div><!-- .sycle_timeresults -->
+			</fieldset>
+			<fieldset>
+			<label for="sycle_customer_title">Your Title *</label>
+			<select class="required" name="sycle_customer_title" class="sycle_customer_title">
+			<option value="" selected="selected">- Select -</option>
+			<option value="Mr">Mr</option>
+			<option value="Mrs">Mrs</option>
+			<option value="Miss">Miss</option>
+			<option value="Ms">Ms</option>
+			<option value="Dr">Dr</option>
+			</select>
+			</fieldset>
+			<fieldset>
+			<label for="sycle_customer_first_name">Your First Name *</label>
+			<input type="text" name="sycle_customer_first_name" class="sycle_customer_first_name" required/>
+			</fieldset>
+			<fieldset>
+			<label for="sycle_customer_last_name">Your Last Name *</label>
+			<input type="text" name="sycle_customer_last_name" class="sycle_customer_last_name" required/>
+			</fieldset>
+			<fieldset>
+			<label for="sycle_customer_phone">Your Phone * </label>
+			<input type="text" name="sycle_customer_phone" class="sycle_customer_phone" required/>
+			</fieldset>
+			<fieldset>
+			<label for="sycle_customer_email">Your Email</label>
+			<input type="text" name="sycle_customer_email" class="sycle_customer_email email"/>
+			</fieldset>
+			<fieldset>
+			<button type="submit" name="sycle-submit" class="sycle-booking-submit">Send Query</button>
+			</fieldset>'.wp_nonce_field( 'submit_contact_form' , 'nonce_field_for_submit_contact_form');
+			$output .= '<input type="text" class="datepicker" name="sycle_datepicker" value=""/>';
+			$output .= '</form>';
+		}
+		$output .= '</div><!-- .sycleapi -->';
+		return $output;
+	}
 
 
 	/**
