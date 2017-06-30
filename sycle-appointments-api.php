@@ -525,10 +525,7 @@ final class Sycle_Appointments {
 
 		if (isset($sycle_clinic_id)) {
 			$output .= '<h3>'.__('Book an appointment','sycle-appointments').'</h3>';
-    	$output .= 'At ...todo</br>'; // TODO LOOK UP DETAILS VIA API?
     	$output .= '<div class="booking_details">';
-    	// TODO
-
     	$output .='</div><!-- .booking_details -->';
     	$output .= '<form action="" class="sycle-booking sycle-clinic-'.esc_attr($sycle_clinic_id).'" method="POST" enctype="multipart/form-data" >';
 
