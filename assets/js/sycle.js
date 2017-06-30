@@ -1,4 +1,5 @@
 /*global sycle_ajax_object:true*/
+(function($) {
 jQuery(document).ready(function($) {
 /*
 REFERENCES:
@@ -267,6 +268,5 @@ https://developers.google.com/maps/documentation/javascript/examples/places-auto
 					});
 				}
 			}
-
-
 		});
+})(jQuery);
