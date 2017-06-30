@@ -450,30 +450,12 @@ final class Sycle_Appointments {
 		$connectdetails['ref_source_name'] = sanitize_text_field('sycle_ref_source_name');
 		$connectdetails['sub_ref_name'] = sanitize_text_field('sycle_sub_ref_name');
 
-/*
-    [action] => sycle_make_appointment
-    [_ajax_nonce] => fb4dc44edb
-    [sycle_startday] => 2017-06-29
-    [sycle_starttime] => 15:30:00
-    [sycle_appt_type_id] => 2803-1
-    [sycle_clinic_id] => 2803-9506
-    [sycle_token] => 88b30f5d68f2e0a899ee8e05ea13a0
-    [sycle_first_name] =>
-    [sycle_last_name] =>
-    [sycle_phone] =>
-    [sycle_email] =>
-    [sycle_ref_source_name] => ref_source_name
-    [sycle_sub_ref_name] => sub_ref_name
-)
-*/
-
-// TODO TEST REQUIRED VALUES ARE THERE - REF API DOCUMENTATION
 
 		$result = $this->return_appointment_request($connectdetails);
+$ajax_do_sycle_make_appointment = $this->timerstop('ajax_do_sycle_make_appointment');
 
 error_log('Response fra apt request '.print_r($result,true).' Time '.$ajax_do_sycle_make_appointment);
 
-$ajax_do_sycle_make_appointment = $this->timerstop('ajax_do_sycle_make_appointment');
 
 /*
 [30-Jun-2017 03:06:11 UTC] ajax_do_sycle_get_open_slots took 1.41662s
@@ -509,10 +491,6 @@ $ajax_do_sycle_make_appointment = $this->timerstop('ajax_do_sycle_make_appointme
 		// todo -
 		$connectstring = '{"token": "'.$connectdetails['token'].'","start": "'.$connectdetails['start'].'","clinic_id": "'.$connectdetails['clinic_id'].'","appt_type_id": "'.$connectdetails['appt_type_id'].'","ref_source_name": "'.$connectdetails['ref_source_name'].'","sub_ref_name": "'.$connectdetails['sub_ref_name'].'","patient": {"first_name": "'.$connectdetails['first_name'].'","last_name": "'.$connectdetails['last_name'].'","phone": "'.$connectdetails['phone'].'","email": "'.$connectdetails['email'].'"}}';
 
-	//	error_log('return_appointment_request() connectstring '.print_r($connectstring,true));
-// TODO
-
-		//$connectstring= '{"token":"'.esc_attr($token).'"}';
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $this->get_api_url('appointment'));
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
