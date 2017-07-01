@@ -13,12 +13,12 @@ Ripped on https://github.com/mattyza/starter-plugin
 ## Settings
 The settings page is accessed under Settings->Sycle Appointements
 
-Sycle Username - Your username for Sycle API. Mandatory.
-Sycle Password - Your password for Sycle API. Mandatory.
-Sycle Subdomain - Set your subdomain for Sycle API.
-Google Places API Key - To use geolocation, this API key from Google is needed.
-Logging - Logs interactions and shows debug information on the settings page below.
-Remove all data - Turn this on to remove all data when deactivating the plugin.
+- Sycle Username - Your username for Sycle API. Mandatory.
+- Sycle Password - Your password for Sycle API. Mandatory.
+- Sycle Subdomain - Set your subdomain for Sycle API.
+- Google Places API Key - To use geolocation, this API key from Google is needed.
+- Logging - Logs interactions and shows debug information on the settings page below.
+- Remove all data - Turn this on to remove all data when deactivating the plugin.
 
 
 
