@@ -491,8 +491,10 @@ error_log('Response fra apt request '.print_r($result,true).' Time '.$ajax_do_sy
 		// todo -
 		$connectstring = '{"token": "'.$connectdetails['token'].'","start": "'.$connectdetails['start'].'","clinic_id": "'.$connectdetails['clinic_id'].'","appt_type_id": "'.$connectdetails['appt_type_id'].'","ref_source_name": "'.$connectdetails['ref_source_name'].'","sub_ref_name": "'.$connectdetails['sub_ref_name'].'","patient": {"first_name": "'.$connectdetails['first_name'].'","last_name": "'.$connectdetails['last_name'].'","phone": "'.$connectdetails['phone'].'","email": "'.$connectdetails['email'].'"}}';
 
+			// did not work - connect string from Sycle guy - limitation on the acc we are working with.
+			//		$connectstring = '{"start":"2017-07-01 15:00:00","length":15,"appt_type_name":"Diagnostic Evaluation","clinic_id":"2803-9506","notes":"","patient":{"title":"Mr","first_name":"Kevin","last_name":"Smith","dob":"1916-01-01","phone":"1231231234","email":"test@test.com"},"ref_source_name":"Online","sub_ref_name":"Night Promo","token":"'.$connectdetails['token'].'"}';
 		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, $this->get_api_url('appointment'));
+		curl_setopt($ch, CURLOPT_URL, $this->get_api_url('appointments'));
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($ch, CURLOPT_POSTFIELDS, $connectstring);
 		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
@@ -500,6 +502,7 @@ error_log('Response fra apt request '.print_r($result,true).' Time '.$ajax_do_sy
 		$headers[] = "Content-Type: application/x-www-form-urlencoded";
 		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 		$result = curl_exec($ch);
+		error_log('Error '.curl_error($ch));
 		if (curl_errno($ch)) {
 			$this->log('Error '.curl_error($ch));
 		}
